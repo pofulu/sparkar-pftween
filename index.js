@@ -293,7 +293,7 @@ class PFTween {
                         tweener: result.tweener
                     };
 
-                    privates(this).complete.push(() => resolve(nextResult))
+                    privates(this).complete.push(() => resolve(nextResult));
                 } else {
                     privates(this).complete.push(() => resolve(result != undefined ? result : privates(this).sampler.end))
                 };
