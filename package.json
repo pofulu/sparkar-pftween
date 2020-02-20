@@ -1,0 +1,8 @@
+{
+  "name": "sparkar-pftween",
+  "version": "1.0.0",
+  "description": "A wrapped SparkAR animation function. You can handle animation in Spark AR just like DOTween in Unity.",
+  "main": "index.js",
+  "author": "Pofu Lu",
+  "license": "MIT"
+}
