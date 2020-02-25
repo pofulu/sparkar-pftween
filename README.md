@@ -112,7 +112,7 @@ mouthOpen.subscribe(() => play_punch_animation.replay());
 
 
 
-## Clips - Play Animations in Sequence
+## Clip - Play Animations in Sequence
 
 `clip` is an asynchronous way to reuse animation based on `Promise`. With `clip`, you can play tween animation in sequence.
 
@@ -170,7 +170,7 @@ combined_clip();
 
 
 
-### Result of `clip()`
+### Result of Clip
 
 The result of clip is a object with property `value`. The default result value is the end value of first `clip()` animation.
 
@@ -198,7 +198,7 @@ concat({ id: '3052518158091790' }).then(Diagnostics.log);
 
 
 
-### Interrupt `clip()`
+### Interrupt Clip
 
 If you want to interrupt `clip()` animation, you have to use `PFTween.newClipCancellation()`, you can pass an optional parameter which will be the result.
 
