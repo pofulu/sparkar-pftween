@@ -190,7 +190,7 @@ concat('Spark AR is awesome').then(Diagnostics.log);
 // {"value":"Spark AR is awesome"}
 
 concat([1, 2, 3, 4]).then(Diagnostics.log);
-// {"value":'[1, 2, 3, 4]'}
+// {"value":[1, 2, 3, 4]}
 
 concat({ id: '3052518158091790' }).then(Diagnostics.log);
 // {"value":{"id": "3052518158091790"}}
@@ -227,7 +227,7 @@ Following is a catched error sample of above code:
 ```json
 {
     "message": "canceled",
-	"value": 'Spark AR is awesome',
+	"value": "Spark AR is awesome",
     "lastValue": 1.3,
     "lastTweener": {}
 }
