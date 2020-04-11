@@ -5,18 +5,41 @@ PFTween is a wrapped Spark AR animation function. You can handle animation in Sp
 
 ## Install
 
-0. [Download PFTween](https://github.com/pofulu/Spark-AR-PFTools/raw/master/PFTween/PFTween.js) (Right click and Save as)
-1. Drap/Import to Assets caetgory in Spark AR. (Spark AR support multiple script files after [v75](https://sparkar.facebook.com/ar-studio/learn/documentation/changelog#75))
-2. Import `Ease` and `PFTween` module at the top of your main script.
-```javascript
-import { Ease, PFTween } from './PFTween';
 
-// Your script...
-```
+
+### Import
+
+0. [Download PFTween](https://github.com/pofulu/sparkar-pftween/raw/master/PFTween.js) (Right click and Save as)
+1. Drap/Import to Assets caetgory in Spark AR. (Spark AR support multiple script files after [v75](https://sparkar.facebook.com/ar-studio/learn/documentation/changelog#75))
+2. Import `Ease` and `PFTween` module at the top of your script.
+    ```javascript
+    import { Ease, PFTween } from './PFTween';
+
+    // Your script...
+    ```
+
 
 3. You can also [Click Here to Download a Sample Project](https://github.com/pofulu/Spark-AR-PFTools/raw/master/PFTween/PFTween%20Sample.zip).
 
-   
+
+
+### npm
+
+0. Add package with npm or yarn
+
+    ```
+    npm -i sparkar-pftween
+    ```
+    ```
+    yarn add sparkar-pftween
+    ```
+1. `require` PFTween library at the top of your script.
+    ```javascript
+    const PFTween = require('sparkar-pftween').PFTween;
+    const Ease = require('sparkar-pftween').Ease;
+	```
+
+
 
 ## Usage
 

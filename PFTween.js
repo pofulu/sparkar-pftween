@@ -291,7 +291,7 @@ class PFTween {
     }
 
     /**
-     * @returns {Promise<{value:any}>}
+     * @returns {{(value?:any):Promise<{value:any}>}}
      */
     get clip() {
         const completePromise = result => new Promise((resolve, reject) => {

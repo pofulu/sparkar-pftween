@@ -1,8 +1,26 @@
 {
   "name": "sparkar-pftween",
   "version": "1.0.0",
-  "description": "A wrapped SparkAR animation function. You can handle animation in Spark AR just like DOTween in Unity.",
+  "description": "A wrapped SparkAR animation tool",
   "main": "PFTween.js",
   "author": "Pofu Lu",
+  "keywords": [
+    "sparkar",
+    "dotween",
+    "tween",
+    "animation",
+    "pofu"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pofulu/sparkar-pftween.git"
+  },
+  "bugs": {
+    "url": "https://github.com/pofulu/sparkar-pftween/issues"
+  },
+  "homepage": "https://github.com/pofulu/sparkar-pftween#readme",
   "license": "MIT"
 }
