@@ -5,8 +5,6 @@ PFTween is a wrapped Spark AR animation function. You can handle animation in Sp
 
 ## Install
 
-
-
 ### Import
 
 0. [Download PFTween](https://github.com/pofulu/sparkar-pftween/raw/master/PFTween.js) (Right click and Save as)
@@ -28,7 +26,7 @@ PFTween is a wrapped Spark AR animation function. You can handle animation in Sp
 0. Add package with npm or yarn
 
     ```
-    npm -i sparkar-pftween
+    npm i sparkar-pftween
     ```
     ```
     yarn add sparkar-pftween
