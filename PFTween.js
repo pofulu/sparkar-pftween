@@ -365,6 +365,7 @@ class PFTweener {
         privates(this).driver = driver;
         privates(this).onStart = start;
         privates(this).onUpdate = update;
+        privates(this).hasBinded = false;
         privates(this).getPromise = promise => result => {
             if (result && result[cancellation_tweener]) {
                 result[cancellation_tweener] = this;
@@ -390,7 +391,12 @@ class PFTweener {
     start() {
         const play = () => {
             invoke(privates(this).onStart);
-            invoke(privates(this).onUpdate, this);
+            
+            if (!privates(this).hasBinded){
+                invoke(privates(this).onUpdate, this);
+                privates(this).hasBinded =true;
+            }
+
             privates(this).driver.start();
         }
 
