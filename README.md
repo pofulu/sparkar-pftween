@@ -1,4 +1,6 @@
 # PFTween
+![vid0_1_progress](README.assets/index.gif)
+
 PFTween is a wrapped Spark AR animation function. You can handle animation in Spark AR just like [DOTween](http://dotween.demigiant.com) in Unity.
 
 
@@ -17,7 +19,7 @@ PFTween is a wrapped Spark AR animation function. You can handle animation in Sp
     ```
 
 
-3. You can also [Click Here to Download a Sample Project](https://github.com/pofulu/Spark-AR-PFTools/raw/master/PFTween/PFTween%20Sample.zip).
+3. You can also [Click Here to Download a Sample Project](https://yehonal.github.io/DownGit/#home?url=https://github.com/pofulu/sparkar-pftween/tree/master/PFTweenDemos).
 
 
 
@@ -28,13 +30,14 @@ PFTween is a wrapped Spark AR animation function. You can handle animation in Sp
     ```
     npm i sparkar-pftween
     ```
+    or
     ```
     yarn add sparkar-pftween
     ```
-1. `require` PFTween library at the top of your script.
+1. Import `Ease` and `PFTween` module at the top of your script.
+  
     ```javascript
-    const PFTween = require('sparkar-pftween').PFTween;
-    const Ease = require('sparkar-pftween').Ease;
+    import { Ease, PFTween } from 'sparkar-pftween';
 	```
 
 
