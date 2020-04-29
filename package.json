@@ -1,6 +1,6 @@
 {
   "name": "sparkar-pftween",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A wrapped SparkAR animation tool",
   "main": "PFTween.js",
   "author": "Pofu Lu",
