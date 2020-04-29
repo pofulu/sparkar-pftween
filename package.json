@@ -12,7 +12,7 @@
     "pofu"
   ],
   "files": [
-    "./PFTween.js",
+    "./PFTween.js"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
