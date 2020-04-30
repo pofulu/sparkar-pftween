@@ -1,5 +1,5 @@
 # PFTween
-![vid0_1_progress](https://github.com/pofulu/sparkar-pftween/blob/master/README.assets/index.gif?raw=true)
+![index](https://github.com/pofulu/sparkar-pftween/blob/master/README.assets/index.gif?raw=true)
 
 PFTween is a wrapped Spark AR animation function. You can handle animation in Spark AR just like [DOTween](http://dotween.demigiant.com) in Unity.
 
@@ -19,7 +19,7 @@ PFTween is a wrapped Spark AR animation function. You can handle animation in Sp
     ```
 
 
-3. You can also [Click Here to Download a Sample Project](https://yehonal.github.io/DownGit/#home?url=https://github.com/pofulu/sparkar-pftween/tree/master/PFTweenDemos).
+3. You can also [Click Here to Download Sample Projects](https://yehonal.github.io/DownGit/#home?url=https://github.com/pofulu/sparkar-pftween/tree/master/PFTweenDemos).
 
 
 
@@ -236,7 +236,7 @@ const clip3 = new PFTween(2, 3, 1000).clip;
 
 clip1().then(clip2).then(clip3)
     .then(Diagnostics.log)	// {"value":"Spark AR is awesome"}
-	.catch(Diagnostics.log)	// {...}
+    .catch(Diagnostics.log)	// {...}
 ```
 
 By calling the `cancellation.cancel()`, you can interrupt the clips chain, and you can catch the reason. The reason is an object containing the following properties:
@@ -251,7 +251,7 @@ Following is a catched error sample of above code:
 ```json
 {
     "message": "canceled",
-	"value": "Spark AR is awesome",
+    "value": "Spark AR is awesome",
     "lastValue": 1.3,
     "lastTweener": {}
 }
