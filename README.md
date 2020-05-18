@@ -259,4 +259,7 @@ Following is a catched error sample of above code:
 
 Please note that `lastTweener` does not display anything in the Spark AR console, but it's acturally the `clip2` in this example.
 
- 
+## Donations
+If this is useful for you, please consider a donation🙏🏼. One-time donations can be made with PayPal.
+
+[![](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=HW99ESSALJZ36)
