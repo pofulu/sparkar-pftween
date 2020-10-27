@@ -42,9 +42,10 @@ const samplers = {
             begin + (amount / 5) * 2,
             begin - (amount / 5) * 1,
             begin
-        ],
-        knots: [0, 1, 2, 3, 4]
+        ]
     }),
+    pingpong: (begin, end) => Animation.samplers.polyline({ keyframes: [begin, end, begin] }),
+    easePingpong: (begin, end) => Animation.samplers.polybezier({ keyframes: [begin, end, begin] }),
 };
 
 const degreeToRadian = Math.PI / 180;
