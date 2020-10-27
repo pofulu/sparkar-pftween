@@ -70,7 +70,10 @@ class PFTween {
     static newClipCancellation(value = undefined) {
         let result = {};
         result.value = value;
-        result.cancel = () => result[cancellation_cancel]();
+        /**
+         * @param {{ignoreReject:boolean}?} config 
+         */
+        result.cancel = (config) => result[cancellation_cancel](config);
         result[cancellation_tweener] = {};
         result[cancellation_cancel] = () => { };
 
@@ -290,14 +293,16 @@ class PFTween {
         const completePromise = result => new Promise((resolve, reject) => {
             if (result) {
                 if (result[cancellation_cancel]) {
-                    result[cancellation_cancel] = () => {
+                    result[cancellation_cancel] = (config) => {
                         result[cancellation_tweener].stop();
-                        reject({
-                            message: 'canceled',
-                            value: result.value,
-                            lastValue: result[cancellation_tweener].scalar.pinLastValue(),
-                            lastTweener: result[cancellation_tweener]
-                        });
+                        if (config && config.ignoreReject ? false : config.ignoreReject) {
+                            reject({
+                                message: 'canceled',
+                                value: result.value,
+                                lastValue: result[cancellation_tweener].scalar.pinLastValue(),
+                                lastTweener: result[cancellation_tweener]
+                            });
+                        }
                     }
 
                     result.value = result.value ? result.value : privates(this).sampler.end;
