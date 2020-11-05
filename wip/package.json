@@ -1,0 +1,15 @@
+{
+  "name": "sparkar-project",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "go": "open project/*.arproj; code -n ./src; yarn; rollup -c -w",
+    "dev": "yarn; rollup -c -w",
+    "build": "yarn; rollup -c"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^9.0.0",
+    "rollup-plugin-terser": "^7.0.0"
+  }
+}
