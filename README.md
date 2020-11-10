@@ -1,4 +1,10 @@
+# ⚠️
+> You are in **develop** branch. You can find the lastest PFTween.js at  [`wip/build/PFTween.js`](https://github.com/pofulu/sparkar-pftween/raw/develop/wip/build/PFTween.js)
+
+
+
 # PFTween
+
 ![index](https://github.com/pofulu/sparkar-pftween/blob/master/README.assets/index.gif?raw=true)
 
 PFTween is a wrapped Spark AR animation function. You can handle animation in Spark AR just like [DOTween](http://dotween.demigiant.com) in Unity.
