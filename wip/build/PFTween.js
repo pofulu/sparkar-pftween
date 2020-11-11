@@ -359,23 +359,29 @@ class PFTween {
 
                 if (tweeners && tweeners.length > 0) {
                     tweeners.forEach(tweener => {
-                        privates(tweener).subscriptions.forEach(e => e.unsubscribe());
-                        tweener.stop();
+                        if (weakmap.has(tweener)) {
+                            privates(tweener).subscriptions.forEach(e => e.unsubscribe());
+                            tweener.stop();
+                        }
                     });
                 }
 
                 return nextFrameAsync(() => {
                     if (tweeners && tweeners.length > 0) {
                         tweeners.forEach(tweener => {
-                            privates(tweener)['isKilled'] = true;
-                            weakmap.delete(tweener);
+                            if (weakmap.has(tweener)) {
+                                privates(tweener)['isKilled'] = true;
+                                weakmap.delete(tweener);
+                            }
                         });
                     }
 
                     if (builders && builders.length > 0) {
                         builders.forEach(builder => {
-                            privates(builder)['isKilled'] = true;
-                            weakmap.delete(builder);
+                            if (weakmap.has(builder)) {
+                                privates(builder)['isKilled'] = true;
+                                weakmap.delete(builder);
+                            }
                         });
                     }
 
@@ -679,7 +685,7 @@ class PFTween {
             throw new Error('This PFTween has been killed.');
         }
 
-        const original = Reactive$1.scale(
+        const original = Reactive$1.pack3(
             sceneObject.transform.scaleX.pinLastValue(),
             sceneObject.transform.scaleY.pinLastValue(),
             sceneObject.transform.scaleZ.pinLastValue(),
@@ -711,7 +717,12 @@ class PFTween {
         }
 
         privates(this).autoKill = autoKill;
-        privates(this).completes.push(() => weakmap.delete(this));
+        privates(this).completes.push(() => {
+            if (weakmap.has(this)) {
+                this['isKilled'] = true;
+                weakmap.delete(this);
+            }
+        });
         return this;
     }
 
@@ -756,7 +767,11 @@ class PFTween {
             if (result) {
                 if (result[cancellation_cancel]) {
                     result[cancellation_cancel] = () => {
-                        result[cancellation_tweener].stop();
+
+                        if (result[cancellation_tweener] != undefined) {
+                            result[cancellation_tweener].stop();
+                        }
+                        
                         reject({
                             message: 'canceled',
                             value: result.value,
@@ -946,18 +961,6 @@ class PFTweener extends PFTweenerValue {
         const signal = Animation.animate(driver, config.sampler);
         super(signal, Array.isArray(config.sampler));
 
-        if (config.id) {
-            idTable[config.id].tweeners = idTable[config.id].tweeners ? idTable[config.id].tweeners : [];
-            idTable[config.id].tweeners.push(this);
-        }
-
-        if (config.autoKill) {
-            config.event.completes.push(() => {
-                privates(this).subscriptions.forEach(e => e.unsubscribe());
-                weakmap.delete(this);
-            });
-        }
-
         /** @type {Subscription[]} */
         privates(this).subscriptions = [];
         privates(this).config = config;
@@ -965,6 +968,25 @@ class PFTweener extends PFTweenerValue {
         privates(this).signal = signal;
         privates(this).hadBinded = false;
         privates(this).isArraySamplers = Array.isArray(config.sampler);
+
+        if (config.id) {
+            idTable[config.id].tweeners = idTable[config.id].tweeners ? idTable[config.id].tweeners : [];
+            idTable[config.id].tweeners.push(this);
+        }
+
+        if (config.autoKill) {
+            config.event.completes.push(() => {
+                nextFrameAsync().then(() => {
+                    if (weakmap.has(this)) {
+                        privates(this).subscriptions.forEach(e => e.unsubscribe());
+                        this.stop();
+                        this['isKilled'] = true;
+                        weakmap.delete(this);
+                    }
+                });
+            });
+        }
+
         privates(this).subscriptions.push(driver.onCompleted().subscribe(() => invoke(config.event.completes)));
         privates(this).subscriptions.push(driver.onAfterIteration().subscribe(index => invoke(config.event.loops, index)));
         privates(this).getPromise = promise => result => {
