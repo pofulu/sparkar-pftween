@@ -1,5 +1,6 @@
 const Reactive = require('Reactive');
 const Time = require('Time');
+const Animation = require('Animation');
 
 /**
  * Convert scalar signal to number, or the signal that contains 'xyzw' to array of numbers.
@@ -171,6 +172,15 @@ function invokeOnceAsync(eventSource, callback = () => { }) {
 
 /**
  * Invoke callback when `signal` is updated, it depends on `monitor({'fireOnInitialValue': true})`.
+ * @param {*} signal 
+ * @param {{(any?:any):void}} callback 
+ */
+function nextSignal(signal, callback = () => { }) {
+    return invokeOnce(signal.monitor({ 'fireOnInitialValue': true }).select('newValue'), callback);
+}
+
+/**
+ * Invoke callback when `signal` is updated, it depends on `monitor({'fireOnInitialValue': true})`.
  * This function return a Promise and the result is the callback of `subscribe()`.
  * @param {*} signal 
  * @param {{(any?:any):void}} callback 
@@ -190,82 +200,53 @@ function nextFrameAsync(callback = () => { }) {
 }
 
 /**
- * Covert Hex color to RGB in 0-1 range. The default alpha is `1`.
- * @param {string} hex 
- * @returns {RgbaSignal}
+ * Invoke callback when next frame. The callback value is runtime.
+ * @param {{(runtime?: number): void}} callback 
  */
-function hex_toRGBA(hex, alpha = 1) {
-    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? Reactive.RGBA(
-        parseInt(result[1], 16) / 256,
-        parseInt(result[2], 16) / 256,
-        parseInt(result[3], 16) / 256,
-        alpha
-    ) : null;
+function nextFrame(callback = () => { }) {
+    return nextSignal(Time.ms, callback)
 }
 
-const Color = {
-    red: hex_toRGBA('#FF0000'),
-    white: hex_toRGBA('#FFFFFF'),
-    cyan: hex_toRGBA('#00FFFF'),
-    silver: hex_toRGBA('#C0C0C0'),
-    blue: hex_toRGBA('#0000FF'),
-    grey: hex_toRGBA('#808080'),
-    darkBlue: hex_toRGBA('#0000A0'),
-    black: hex_toRGBA('#000000'),
-    lightBlue: hex_toRGBA('#ADD8E6'),
-    orange: hex_toRGBA('#FFA500'),
-    purple: hex_toRGBA('#800080'),
-    brown: hex_toRGBA('#A52A2A'),
-    yellow: hex_toRGBA('#FFFF00'),
-    maroon: hex_toRGBA('#800000'),
-    lime: hex_toRGBA('#00FF00'),
-    green: hex_toRGBA('#008000'),
-    magenta: hex_toRGBA('#FF00FF'),
-    olive: hex_toRGBA('#808000'),
-    clear: Reactive.pack4(0, 0, 0, 0),
-};
-
-const Animation = require('Animation');
+const Animation$1 = require('Animation');
 const Reactive$1 = require('Reactive');
 const Time$1 = require('Time');
 const Diagnostics = require('Diagnostics');
 
 const samplers = {
-    linear: (begin, end) => Animation.samplers.linear(begin, end),
-    easeInQuad: (begin, end) => Animation.samplers.easeInQuad(begin, end),
-    easeOutQuad: (begin, end) => Animation.samplers.easeOutQuad(begin, end),
-    easeInOutQuad: (begin, end) => Animation.samplers.easeInOutQuad(begin, end),
-    easeInCubic: (begin, end) => Animation.samplers.easeInCubic(begin, end),
-    easeOutCubic: (begin, end) => Animation.samplers.easeOutCubic(begin, end),
-    easeInOutCubic: (begin, end) => Animation.samplers.easeInOutCubic(begin, end),
-    easeInQuart: (begin, end) => Animation.samplers.easeInQuart(begin, end),
-    easeOutQuart: (begin, end) => Animation.samplers.easeOutQuart(begin, end),
-    easeInOutQuart: (begin, end) => Animation.samplers.easeInOutQuart(begin, end),
-    easeInQuint: (begin, end) => Animation.samplers.easeInQuint(begin, end),
-    easeOutQuint: (begin, end) => Animation.samplers.easeOutQuint(begin, end),
-    easeInOutQuint: (begin, end) => Animation.samplers.easeInOutQuint(begin, end),
-    easeInSine: (begin, end) => Animation.samplers.easeInSine(begin, end),
-    easeOutSine: (begin, end) => Animation.samplers.easeOutSine(begin, end),
-    easeInOutSine: (begin, end) => Animation.samplers.easeInOutSine(begin, end),
-    easeInExpo: (begin, end) => Animation.samplers.easeInExpo(begin, end),
-    easeOutExpo: (begin, end) => Animation.samplers.easeOutExpo(begin, end),
-    easeInOutExpo: (begin, end) => Animation.samplers.easeInOutExpo(begin, end),
-    easeInCirc: (begin, end) => Animation.samplers.easeInCirc(begin, end),
-    easeOutCirc: (begin, end) => Animation.samplers.easeOutCirc(begin, end),
-    easeInOutCirc: (begin, end) => Animation.samplers.easeInOutCirc(begin, end),
-    easeInBack: (begin, end) => Animation.samplers.easeInBack(begin, end),
-    easeOutBack: (begin, end) => Animation.samplers.easeOutBack(begin, end),
-    easeInOutBack: (begin, end) => Animation.samplers.easeInOutBack(begin, end),
-    easeInElastic: (begin, end) => Animation.samplers.easeInElastic(begin, end),
-    easeOutElastic: (begin, end) => Animation.samplers.easeOutElastic(begin, end),
-    easeInOutElastic: (begin, end) => Animation.samplers.easeInOutElastic(begin, end),
-    easeInBounce: (begin, end) => Animation.samplers.easeInBounce(begin, end),
-    easeOutBounce: (begin, end) => Animation.samplers.easeOutBounce(begin, end),
-    easeInOutBounce: (begin, end) => Animation.samplers.easeInOutBounce(begin, end),
-    pingpong: (begin, end) => Animation.samplers.polyline({ keyframes: [begin, end, begin] }),
-    easePingpong: (begin, end) => Animation.samplers.polybezier({ keyframes: [begin, end, begin] }),
-    punch: (begin, amount) => Animation.samplers.polyline({
+    linear: (begin, end) => Animation$1.samplers.linear(begin, end),
+    easeInQuad: (begin, end) => Animation$1.samplers.easeInQuad(begin, end),
+    easeOutQuad: (begin, end) => Animation$1.samplers.easeOutQuad(begin, end),
+    easeInOutQuad: (begin, end) => Animation$1.samplers.easeInOutQuad(begin, end),
+    easeInCubic: (begin, end) => Animation$1.samplers.easeInCubic(begin, end),
+    easeOutCubic: (begin, end) => Animation$1.samplers.easeOutCubic(begin, end),
+    easeInOutCubic: (begin, end) => Animation$1.samplers.easeInOutCubic(begin, end),
+    easeInQuart: (begin, end) => Animation$1.samplers.easeInQuart(begin, end),
+    easeOutQuart: (begin, end) => Animation$1.samplers.easeOutQuart(begin, end),
+    easeInOutQuart: (begin, end) => Animation$1.samplers.easeInOutQuart(begin, end),
+    easeInQuint: (begin, end) => Animation$1.samplers.easeInQuint(begin, end),
+    easeOutQuint: (begin, end) => Animation$1.samplers.easeOutQuint(begin, end),
+    easeInOutQuint: (begin, end) => Animation$1.samplers.easeInOutQuint(begin, end),
+    easeInSine: (begin, end) => Animation$1.samplers.easeInSine(begin, end),
+    easeOutSine: (begin, end) => Animation$1.samplers.easeOutSine(begin, end),
+    easeInOutSine: (begin, end) => Animation$1.samplers.easeInOutSine(begin, end),
+    easeInExpo: (begin, end) => Animation$1.samplers.easeInExpo(begin, end),
+    easeOutExpo: (begin, end) => Animation$1.samplers.easeOutExpo(begin, end),
+    easeInOutExpo: (begin, end) => Animation$1.samplers.easeInOutExpo(begin, end),
+    easeInCirc: (begin, end) => Animation$1.samplers.easeInCirc(begin, end),
+    easeOutCirc: (begin, end) => Animation$1.samplers.easeOutCirc(begin, end),
+    easeInOutCirc: (begin, end) => Animation$1.samplers.easeInOutCirc(begin, end),
+    easeInBack: (begin, end) => Animation$1.samplers.easeInBack(begin, end),
+    easeOutBack: (begin, end) => Animation$1.samplers.easeOutBack(begin, end),
+    easeInOutBack: (begin, end) => Animation$1.samplers.easeInOutBack(begin, end),
+    easeInElastic: (begin, end) => Animation$1.samplers.easeInElastic(begin, end),
+    easeOutElastic: (begin, end) => Animation$1.samplers.easeOutElastic(begin, end),
+    easeInOutElastic: (begin, end) => Animation$1.samplers.easeInOutElastic(begin, end),
+    easeInBounce: (begin, end) => Animation$1.samplers.easeInBounce(begin, end),
+    easeOutBounce: (begin, end) => Animation$1.samplers.easeOutBounce(begin, end),
+    easeInOutBounce: (begin, end) => Animation$1.samplers.easeInOutBounce(begin, end),
+    pingpong: (begin, end) => Animation$1.samplers.polyline({ keyframes: [begin, end, begin] }),
+    easePingpong: (begin, end) => Animation$1.samplers.polybezier({ keyframes: [begin, end, begin] }),
+    punch: (begin, amount) => Animation$1.samplers.polyline({
         keyframes: [
             begin + (amount / 5) * 4,
             begin - (amount / 5) * 3,
@@ -335,63 +316,63 @@ class PFTween {
 
     /**
      * A similar function to `DOTween.To()`
-     * @param {number} getter 
+     * @param {{(): number}} getter 
      * @param {{(value: PFTweenerValue): void}} setter 
      * @param {number} end 
      * @param {number} durationMilliseconds 
      */
     static to(getter, setter, end, durationMilliseconds) {
-        return new PFTween(getter, end, durationMilliseconds).onStart(setter);
+        return new PFTween(getter(), end, durationMilliseconds).onStart(setter);
     }
 
     static hasId(id) {
-        return idTable[id] != undefined;
-    }
+    return idTable[id] != undefined;
+}
 
-    static async kill(...ids) {
-        const processes = ids.map(id => {
-            if (PFTween.hasId(id)) {
-                /** @type {PFTween[]} */
-                const builders = idTable[id].builders;
+    static async killAsync(...ids) {
+    const processes = ids.map(id => {
+        if (PFTween.hasId(id)) {
+            /** @type {PFTween[]} */
+            const builders = idTable[id].builders;
 
-                /** @type {PFTweener[]} */
-                const tweeners = idTable[id].tweeners;
+            /** @type {PFTweener[]} */
+            const tweeners = idTable[id].tweeners;
 
+            if (tweeners && tweeners.length > 0) {
+                tweeners.forEach(tweener => {
+                    if (weakmap.has(tweener)) {
+                        privates(tweener).subscriptions.forEach(e => e.unsubscribe());
+                        tweener.stop();
+                    }
+                });
+            }
+
+            return nextFrameAsync(() => {
                 if (tweeners && tweeners.length > 0) {
                     tweeners.forEach(tweener => {
                         if (weakmap.has(tweener)) {
-                            privates(tweener).subscriptions.forEach(e => e.unsubscribe());
-                            tweener.stop();
+                            tweener['isKilled'] = true;
+                            weakmap.delete(tweener);
                         }
                     });
                 }
 
-                return nextFrameAsync(() => {
-                    if (tweeners && tweeners.length > 0) {
-                        tweeners.forEach(tweener => {
-                            if (weakmap.has(tweener)) {
-                                privates(tweener)['isKilled'] = true;
-                                weakmap.delete(tweener);
-                            }
-                        });
-                    }
+                if (builders && builders.length > 0) {
+                    builders.forEach(builder => {
+                        if (weakmap.has(builder)) {
+                            builder['isKilled'] = true;
+                            weakmap.delete(builder);
+                        }
+                    });
+                }
 
-                    if (builders && builders.length > 0) {
-                        builders.forEach(builder => {
-                            if (weakmap.has(builder)) {
-                                privates(builder)['isKilled'] = true;
-                                weakmap.delete(builder);
-                            }
-                        });
-                    }
+                delete idTable[id];
+            });
+        }
+    });
 
-                    idTable[id] = null;
-                });
-            }
-        });
-
-        await Promise.all(processes);
-    }
+    await Promise.all(processes);
+}
 
     /**
      * Merge multiple clips into one clip. These clips play in same time.
@@ -399,12 +380,12 @@ class PFTween {
      * @returns {PFTweenClip}
      */
     static combine(...clips) {
-        clips = clips.flat();
-        return result =>
-            Promise.all(clips.map(i => i(result))).then(endValues =>
-                Promise.resolve(result != undefined ? result : endValues)
-            );
-    }
+    clips = clips.flat();
+    return result =>
+        Promise.all(clips.map(i => i(result))).then(endValues =>
+            Promise.resolve(result != undefined ? result : endValues)
+        );
+}
 
     /**
      * Merge multiple clips into one clip. These clips play in sequence.
@@ -412,492 +393,495 @@ class PFTween {
      * @returns {{(result?:any):Promise<{value:any}>}}
      */
     static concat(...clips) {
-        clips = clips.flat();
-        return result => clips.slice(1).reduce((pre, cur) => pre.then(cur), clips[0](result));
+    clips = clips.flat();
+    return result => clips.slice(1).reduce((pre, cur) => pre.then(cur), clips[0](result));
+}
+
+/**
+ * Subscribe tween value once when the tweener start.
+ * @param {{(value: PFTweenerValue) : void}} callback 
+ */
+bind(callback) {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
     }
 
-    /**
-     * Subscribe tween value once when the tweener start.
-     * @param {{(value: PFTweenerValue) : void}} callback 
-     */
-    bind(callback) {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
-        }
+    privates(this).binds.push(callback);
+    return this;
+}
 
-        privates(this).binds.push(callback);
-        return this;
+/**
+ * Set an id to the tween, it's one-to-many.
+ * @param {string | Symbol} id 
+ */
+setId(id) {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
     }
 
-    /**
-     * Set an id to the tween, it's one-to-many.
-     * @param {string | Symbol} id 
-     */
-    setId(id) {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
-        }
+    privates(this).id = id;
+    idTable[id] = idTable[id] ? idTable[id] : {};
+    idTable[id].builders = idTable[id].builders ? idTable[id].builders : [];
+    idTable[id].builders.push(this);
 
-        privates(this).id = id;
-        idTable[id] = idTable[id] ? idTable[id] : {};
-        idTable[id].builders = idTable[id].builders ? idTable[id].builders : [];
-        idTable[id].builders.push(this);
+    return this;
+}
 
-        return this;
+/**
+ * If `isMirror` is not assigned, mirror animation is enabled by default.
+ * @param {boolean=} isMirror 
+ */
+setMirror(isMirror = true) {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
     }
 
-    /**
-     * If `isMirror` is not assigned, mirror animation is enabled by default.
-     * @param {boolean=} isMirror 
-     */
-    setMirror(isMirror = true) {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
-        }
+    privates(this).isMirror = isMirror;
+    return this;
+}
 
-        privates(this).isMirror = isMirror;
-        return this;
+/**
+ * If `loopCount` is not assigned, it will be an infinite loop.
+ * @param {number=} loopCount 
+ */
+setLoops(loopCount = Infinity) {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
     }
 
-    /**
-     * If `loopCount` is not assigned, it will be an infinite loop.
-     * @param {number=} loopCount 
-     */
-    setLoops(loopCount = Infinity) {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
-        }
+    privates(this).loopCount = loopCount;
+    return this;
+}
 
-        privates(this).loopCount = loopCount;
-        return this;
+setBegin(begin) {
+    if (Array.isArray(privates(this).sampler)) {
+        const arrOfVal = toNumbers(begin);
+        for (let i = 0; i < arrOfVal.length; i++) {
+            const sampler = privates(this).sampler[i];
+            sampler.begin = arrOfVal[i];
+        }
+    } else {
+        privates(this).sampler.begin = toNumber(begin);
+    }
+    return this;
+}
+
+setEnd(end) {
+    if (Array.isArray(privates(this).sampler)) {
+        const arrOfVal = toNumbers(end);
+        for (let i = 0; i < arrOfVal.length; i++) {
+            const sampler = privates(this).sampler[i];
+            sampler.end = arrOfVal[i];
+        }
+    } else {
+        privates(this).sampler.end = toNumber(end);
+    }
+    return this;
+}
+
+/**
+ * @param {{(begin: number | number[], end: number | number[]): ScalarSampler | ArrayOfScalarSamplers}} ease 
+ */
+setEase(ease) {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
     }
 
-    setBegin(begin) {
-        if (Array.isArray(privates(this).sampler)) {
-            const arrOfVal = toNumbers(begin);
-            for (let i = 0; i < arrOfVal.length; i++) {
-                const sampler = privates(this).sampler[i];
-                sampler.begin = arrOfVal[i];
-            }
-        } else {
-            privates(this).sampler.begin = toNumber(begin);
-        }
-        return this;
+    if (Array.isArray(privates(this).sampler)) {
+        privates(this).sampler = ease(privates(this).sampler.map(v => v.begin), privates(this).sampler.map(v => v.end));
+    } else {
+        privates(this).sampler = ease(privates(this).sampler.begin, privates(this).sampler.end);
+    }
+    return this;
+}
+
+/**
+ * @param {number} delayMilliseconds 
+ */
+setDelay(delayMilliseconds) {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
     }
 
-    setEnd(end) {
-        if (Array.isArray(privates(this).sampler)) {
-            const arrOfVal = toNumbers(end);
-            for (let i = 0; i < arrOfVal.length; i++) {
-                const sampler = privates(this).sampler[i];
-                sampler.end = arrOfVal[i];
-            }
-        } else {
-            privates(this).sampler.end = toNumber(end);
-        }
-        return this;
+    privates(this).delayMilliseconds = delayMilliseconds;
+    return this;
+}
+
+/**
+ * Monitor tween value when playing.
+ * @param {{(value: PFTweenerValue): void}} callback 
+ */
+onUpdate(callback) {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
     }
 
-    /**
-     * @param {{(begin: number | number[], end: number | number[]): ScalarSampler | ArrayOfScalarSamplers}} ease 
-     */
-    setEase(ease) {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
-        }
+    privates(this).updates.push(callback);
+    return this;
+}
 
-        if (Array.isArray(privates(this).sampler)) {
-            privates(this).sampler = ease(privates(this).sampler.map(v => v.begin), privates(this).sampler.map(v => v.end));
-        } else {
-            privates(this).sampler = ease(privates(this).sampler.begin, privates(this).sampler.end);
-        }
-        return this;
+/**
+ * @param {{(iteration: number) : void}} callback
+ */
+onLoop(callback) {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
     }
 
-    /**
-     * @param {number} delayMilliseconds 
-     */
-    setDelay(delayMilliseconds) {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
-        }
+    privates(this).loops.push(callback);
+    return this;
+}
 
-        privates(this).delayMilliseconds = delayMilliseconds;
-        return this;
+/**
+ * Subscribe tween value everytime the tweener start.
+ * @param {{(value: PFTweenerValue) : void}} callback 
+ */
+onStart(callback) {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
     }
 
-    /**
-     * Monitor tween value when playing.
-     * @param {{(value: PFTweenerValue): void}} callback 
-     */
-    onUpdate(callback) {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
-        }
+    privates(this).starts.push(callback);
+    return this;
+}
 
-        privates(this).updates.push(callback);
-        return this;
+/**
+ * @param {{() : void}} callback
+ */
+onComplete(callback) {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
     }
 
-    /**
-     * @param {{(iteration: number) : void}} callback
-     */
-    onLoop(callback) {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
-        }
+    privates(this).completes.push(callback);
+    return this;
+}
 
-        privates(this).loops.push(callback);
-        return this;
+/**
+ * @param {SceneObjectBase} sceneObject
+ */
+onStartVisible(sceneObject) {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
     }
 
-    /**
-     * Subscribe tween value everytime the tweener start.
-     * @param {{(value: PFTweenerValue) : void}} callback 
-     */
-    onStart(callback) {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
-        }
+    privates(this).starts.push(() => sceneObject.hidden = false);
+    return this;
+}
 
-        privates(this).starts.push(callback);
-        return this;
+/**
+ * @param {SceneObjectBase} sceneObject
+ */
+onAnimatingVisibleOnly(sceneObject) {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
     }
 
-    /**
-     * @param {{() : void}} callback
-     */
-    onComplete(callback) {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
-        }
+    this.onStartVisible(sceneObject);
+    this.onCompleteHidden(sceneObject);
+    return this;
+}
 
-        privates(this).completes.push(callback);
-        return this;
+/**
+ * @param {SceneObjectBase} sceneObject
+ */
+onStartHidden(sceneObject) {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
     }
 
-    /**
-     * @param {SceneObjectBase} sceneObject
-     */
-    onStartVisible(sceneObject) {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
-        }
+    privates(this).starts.push(() => sceneObject.hidden = true);
+    return this;
+}
 
-        privates(this).starts.push(() => sceneObject.hidden = false);
-        return this;
+/**
+ * @param {SceneObjectBase} sceneObject
+ */
+onCompleteVisible(sceneObject) {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
     }
 
-    /**
-     * @param {SceneObjectBase} sceneObject
-     */
-    onAnimatingVisibleOnly(sceneObject) {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
-        }
+    privates(this).completes.push(() => sceneObject.hidden = false);
+    return this;
+}
 
-        this.onStartVisible(sceneObject);
-        this.onCompleteHidden(sceneObject);
-        return this;
+/**
+ * @param {SceneObjectBase} sceneObject
+ */
+onCompleteHidden(sceneObject) {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
     }
 
-    /**
-     * @param {SceneObjectBase} sceneObject
-     */
-    onStartHidden(sceneObject) {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
-        }
+    privates(this).completes.push(() => sceneObject.hidden = true);
+    return this;
+}
 
-        privates(this).starts.push(() => sceneObject.hidden = true);
-        return this;
+/**
+ * @param {SceneObjectBase} sceneObject 
+ */
+onCompleteResetPosition(sceneObject) {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
     }
 
-    /**
-     * @param {SceneObjectBase} sceneObject
-     */
-    onCompleteVisible(sceneObject) {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
-        }
+    const original = Reactive$1.pack3(
+        sceneObject.transform.x.pinLastValue(),
+        sceneObject.transform.y.pinLastValue(),
+        sceneObject.transform.z.pinLastValue(),
+    );
 
-        privates(this).completes.push(() => sceneObject.hidden = false);
-        return this;
+    privates(this).completes.push(() => sceneObject.transform.position = original);
+    return this;
+}
+
+/**
+ * @param {SceneObjectBase} sceneObject
+ */
+onCompleteResetRotation(sceneObject) {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
     }
 
-    /**
-     * @param {SceneObjectBase} sceneObject
-     */
-    onCompleteHidden(sceneObject) {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
-        }
+    const original = {
+        x: sceneObject.transform.rotationX.pinLastValue(),
+        y: sceneObject.transform.rotationY.pinLastValue(),
+        z: sceneObject.transform.rotationZ.pinLastValue(),
+    };
 
-        privates(this).completes.push(() => sceneObject.hidden = true);
-        return this;
+    privates(this).completes.push(() => {
+        sceneObject.transform.rotationX = original.x;
+        sceneObject.transform.rotationY = original.y;
+        sceneObject.transform.rotationZ = original.z;
+    });
+    return this;
+}
+
+/**
+ * @param {SceneObjectBase} sceneObject
+ */
+onCompleteResetScale(sceneObject) {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
     }
 
-    /**
-     * @param {SceneObjectBase} sceneObject 
-     */
-    onCompleteResetPosition(sceneObject) {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
-        }
+    const original = Reactive$1.pack3(
+        sceneObject.transform.scaleX.pinLastValue(),
+        sceneObject.transform.scaleY.pinLastValue(),
+        sceneObject.transform.scaleZ.pinLastValue(),
+    );
 
-        const original = Reactive$1.pack3(
-            sceneObject.transform.x.pinLastValue(),
-            sceneObject.transform.y.pinLastValue(),
-            sceneObject.transform.z.pinLastValue(),
-        );
+    privates(this).completes.push(() => sceneObject.transform.scale = original);
+    return this;
+}
 
-        privates(this).completes.push(() => sceneObject.transform.position = original);
-        return this;
+/**
+ * Please note that this function handles in async but non-awaitable.
+ * @param {SceneObjectBase} sceneObject
+ */
+onCompleteResetOpacity(sceneObject) {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
     }
 
-    /**
-     * @param {SceneObjectBase} sceneObject
-     */
-    onCompleteResetRotation(sceneObject) {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
-        }
+    sceneObject.getMaterial().then(mat => {
+        const original = mat.opacity.pinLastValue();
+        privates(this).completes.push(() => mat.opacity = original);
+    }).catch(Diagnostics.log);
+    return this;
+}
 
-        const original = {
-            x: sceneObject.transform.rotationX.pinLastValue(),
-            y: sceneObject.transform.rotationY.pinLastValue(),
-            z: sceneObject.transform.rotationZ.pinLastValue(),
-        };
-
-        privates(this).completes.push(() => {
-            sceneObject.transform.rotationX = original.x;
-            sceneObject.transform.rotationY = original.y;
-            sceneObject.transform.rotationZ = original.z;
-        });
-        return this;
+setAutoKill(autoKill = true) {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
     }
 
-    /**
-     * @param {SceneObjectBase} sceneObject
-     */
-    onCompleteResetScale(sceneObject) {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
-        }
-
-        const original = Reactive$1.pack3(
-            sceneObject.transform.scaleX.pinLastValue(),
-            sceneObject.transform.scaleY.pinLastValue(),
-            sceneObject.transform.scaleZ.pinLastValue(),
-        );
-
-        privates(this).completes.push(() => sceneObject.transform.scale = original);
-        return this;
-    }
-
-    /**
-     * Please note that this function handles in async but non-awaitable.
-     * @param {SceneObjectBase} sceneObject
-     */
-    onCompleteResetOpacity(sceneObject) {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
-        }
-
-        sceneObject.getMaterial().then(mat => {
-            const original = mat.opacity.pinLastValue();
-            privates(this).completes.push(() => mat.opacity = original);
-        }).catch(Diagnostics.log);
-        return this;
-    }
-
-    setAutoKill(autoKill = true) {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
-        }
-
-        privates(this).autoKill = autoKill;
-        privates(this).completes.push(() => {
+    privates(this).autoKill = autoKill;
+    privates(this).completes.push(() => {
+        nextFrame(() => {
             if (weakmap.has(this)) {
                 this['isKilled'] = true;
                 weakmap.delete(this);
             }
         });
-        return this;
+    });
+    return this;
+}
+
+apply(autoPlay = true) {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
     }
 
-    apply(autoPlay = true) {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
+    const tweener = new PFTweener({
+        loopCount: privates(this).loopCount,
+        mirror: privates(this).isMirror,
+        durationMilliseconds: privates(this).durationMilliseconds,
+        delayMilliseconds: privates(this).delayMilliseconds,
+        id: privates(this).id,
+        sampler: privates(this).sampler,
+        autoKill: privates(this).autoKill,
+        event: {
+            completes: privates(this).completes,
+            starts: privates(this).starts,
+            loops: privates(this).loops,
+            updates: privates(this).updates,
+            binds: privates(this).binds,
         }
+    });
 
-        const tweener = new PFTweener({
-            loopCount: privates(this).loopCount,
-            mirror: privates(this).isMirror,
-            durationMilliseconds: privates(this).durationMilliseconds,
-            delayMilliseconds: privates(this).delayMilliseconds,
-            id: privates(this).id,
-            sampler: privates(this).sampler,
-            autoKill: privates(this).autoKill,
-            event: {
-                completes: privates(this).completes,
-                starts: privates(this).starts,
-                loops: privates(this).loops,
-                updates: privates(this).updates,
-                binds: privates(this).binds,
-            }
-        });
-
-        if (autoPlay) {
-            tweener.start();
-        }
-
-        return tweener;
+    if (autoPlay) {
+        tweener.start();
     }
 
-    /**
-     * @returns {PFTweenClip} 
-     */
-    get clip() {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
-        }
+    return tweener;
+}
 
-        const completePromise = result => new Promise((resolve, reject) => {
-            if (result) {
-                if (result[cancellation_cancel]) {
-                    result[cancellation_cancel] = () => {
+/**
+ * @returns {PFTweenClip} 
+ */
+get clip() {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
+    }
 
-                        if (result[cancellation_tweener] != undefined) {
-                            result[cancellation_tweener].stop();
-                        }
-                        
-                        reject({
-                            message: 'canceled',
-                            value: result.value,
-                            lastValue: toNumber(result[cancellation_tweener].scalar),
-                            lastTweener: result[cancellation_tweener]
-                        });
-                        result.isRequested = true;
-                        return nextFrameAsync();
-                    };
+    const completePromise = result => new Promise((resolve, reject) => {
+        if (result) {
+            if (result[cancellation_cancel]) {
+                result[cancellation_cancel] = () => {
+                    reject({
+                        message: 'canceled',
+                        value: result.value,
+                        lastValue: toNumber(result[cancellation_tweener].scalar),
+                        lastTweener: result[cancellation_tweener]
+                    });
 
-                    result.value = result.value ? result.value : privates(this).sampler.end;
+                    result.isRequested = true;
+
+                    if (!result[cancellation_tweener].isKilled) {
+                        result[cancellation_tweener].stop();
+                    }
+
+                    return nextFrameAsync();
+                };
+
+                result.value = result.value ? result.value : privates(this).sampler.end;
+                privates(this).completes.push(() => resolve(result));
+            } else {
+                if (result.value) {
                     privates(this).completes.push(() => resolve(result));
                 } else {
-                    if (result.value) {
-                        privates(this).completes.push(() => resolve(result));
-                    } else {
-                        privates(this).completes.push(() => resolve({ value: privates(this).sampler.end }));
-                    }
+                    privates(this).completes.push(() => resolve({ value: privates(this).sampler.end }));
                 }
-            } else {
-                privates(this).completes.push(() => { resolve({ value: privates(this).sampler.end }); });
             }
-        });
-
-        if (privates(this).loopCount == Infinity) {
-            Diagnostics.log('Please note that set infinite loop will stuck the clips chain.');
+        } else {
+            privates(this).completes.push(() => { resolve({ value: privates(this).sampler.end }); });
         }
+    });
 
-        return privates(this.apply(false)).getPromise(completePromise);
+    if (privates(this).loopCount == Infinity) {
+        Diagnostics.log('Please note that set infinite loop will stuck the clips chain.');
     }
 
-    /**
-     * Play once, then auto kills itself after complete.
-     */
-    swizzle(specifier) {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
-        }
+    return privates(this.apply(false)).getPromise(completePromise);
+}
 
-        this.setAutoKill();
-        return this.apply(true).swizzle(specifier);
+/**
+ * Play once, then auto kills itself after complete.
+ */
+swizzle(specifier) {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
     }
 
-    /**
-     * Play once, then auto kills itself after complete.
-     */
-    get scalar() {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
-        }
+    this.setAutoKill();
+    return this.apply(true).swizzle(specifier);
+}
 
-        this.setAutoKill();
-        return this.apply().scalar;
+/**
+ * Play once, then auto kills itself after complete.
+ */
+get scalar() {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
     }
 
-    /**
-     * Play once, then auto kills itself after complete.
-     */
-    get pack2() {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
-        }
+    this.setAutoKill();
+    return this.apply().scalar;
+}
 
-        this.setAutoKill();
-        return this.apply().pack2;
+/**
+ * Play once, then auto kills itself after complete.
+ */
+get pack2() {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
     }
 
-    /**
-     * Play once, then auto kills itself after complete.
-     */
-    get pack3() {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
-        }
+    this.setAutoKill();
+    return this.apply().pack2;
+}
 
-        this.setAutoKill();
-        return this.apply().pack3;
+/**
+ * Play once, then auto kills itself after complete.
+ */
+get pack3() {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
     }
 
-    /**
-     * Play once, then auto kills itself after complete.
-     */
-    get scale() {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
-        }
+    this.setAutoKill();
+    return this.apply().pack3;
+}
 
-        this.setAutoKill();
-        return this.pack3;
+/**
+ * Play once, then auto kills itself after complete.
+ */
+get scale() {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
     }
 
-    /**
-     * Play once, then auto kills itself after complete.
-     */
-    get pack4() {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
-        }
+    this.setAutoKill();
+    return this.pack3;
+}
 
-        this.setAutoKill();
-        return this.apply().pack4;
+/**
+ * Play once, then auto kills itself after complete.
+ */
+get pack4() {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
     }
 
-    /**
-     * Play once, then auto kills itself after complete.
-     */
-    get rotation() {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
-        }
+    this.setAutoKill();
+    return this.apply().pack4;
+}
 
-        this.setAutoKill();
-        return this.deg2rad;
+/**
+ * Play once, then auto kills itself after complete.
+ */
+get rotation() {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
     }
 
-    /**
-     * Play once, then auto kills itself after complete.
-     */
-    get deg2rad() {
-        if (this['isKilled']) {
-            throw new Error('This PFTween has been killed.');
-        }
+    this.setAutoKill();
+    return this.deg2rad;
+}
 
-        this.setAutoKill();
-        return this.apply().deg2rad;
+/**
+ * Play once, then auto kills itself after complete.
+ */
+get deg2rad() {
+    if (this['isKilled']) {
+        throw new Error('This PFTween has been killed.');
     }
+
+    this.setAutoKill();
+    return this.apply().deg2rad;
+}
 }
 
 class PFTweenerValue {
@@ -957,8 +941,8 @@ class PFTweener extends PFTweenerValue {
      * @param {PFTweenConfig} config 
      */
     constructor(config) {
-        const driver = Animation.timeDriver({ durationMilliseconds: config.durationMilliseconds, loopCount: config.loopCount, mirror: config.mirror });
-        const signal = Animation.animate(driver, config.sampler);
+        const driver = Animation$1.timeDriver({ durationMilliseconds: config.durationMilliseconds, loopCount: config.loopCount, mirror: config.mirror });
+        const signal = Animation$1.animate(driver, config.sampler);
         super(signal, Array.isArray(config.sampler));
 
         /** @type {Subscription[]} */
@@ -976,7 +960,7 @@ class PFTweener extends PFTweenerValue {
 
         if (config.autoKill) {
             config.event.completes.push(() => {
-                nextFrameAsync().then(() => {
+                nextFrame(() => {
                     if (weakmap.has(this)) {
                         privates(this).subscriptions.forEach(e => e.unsubscribe());
                         this.stop();
@@ -988,13 +972,16 @@ class PFTweener extends PFTweenerValue {
         }
 
         privates(this).subscriptions.push(driver.onCompleted().subscribe(() => invoke(config.event.completes)));
+
         privates(this).subscriptions.push(driver.onAfterIteration().subscribe(index => invoke(config.event.loops, index)));
+
         privates(this).getPromise = promise => result => {
             if (result && result[cancellation_tweener]) {
                 result[cancellation_tweener] = this;
             }
 
             this.replay();
+
             return promise(result);
         };
 
@@ -1062,6 +1049,10 @@ class PFTweener extends PFTweenerValue {
         }
 
         const start = () => {
+            if (this['isKilled']) {
+                throw new Error('This PFTweener has been killed.')
+            }
+
             if (!privates(this).hadBinded) {
                 privates(this).hadBinded = true;
                 invoke(privates(this).config.event.binds, new PFTweenerValue(privates(this).signal, privates(this).isArraySamplers));

@@ -9,7 +9,6 @@
   },
   "license": "ISC",
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^9.0.0",
-    "rollup-plugin-terser": "^7.0.0"
+    "@rollup/plugin-node-resolve": "^10.0.0"
   }
 }

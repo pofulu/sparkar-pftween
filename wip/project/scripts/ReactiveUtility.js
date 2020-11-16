@@ -1,5 +1,6 @@
 const Reactive = require('Reactive');
 const Time = require('Time');
+const Animation = require('Animation');
 
 /**
  * Support `number`, `ScalarSignal`, `Point2DSignal`, `PointSignal`, `Point4DSignal`, `VectorSignal`
@@ -15,6 +16,14 @@ export function remapClamp(input, fromMin, fromMax, toMin, toMax) {
  */
 export function remap(input, fromMin, fromMax, toMin, toMax) {
     return Reactive.toRange(Reactive.fromRange(input, fromMin, fromMax), toMin, toMax);
+}
+
+/**
+ * Support `number`, `ScalarSignal`, `Point2DSignal`, `PointSignal`, `Point4DSignal`, `VectorSignal`
+ * @returns {any}
+ */
+export function remapClampEase(input, fromMin, fromMax, toMin, toMax, ease) {
+    return Animation.animate(Animation.valueDriver(input, fromMin, fromMax), ease(toMin, toMax));
 }
 
 /**
@@ -368,24 +377,24 @@ export function delay(ms) {
     return new Promise(resolve => Time.setTimeout(resolve, ms))
 }
 
-export const Color = {
-    red: hex_toRGBA('#FF0000'),
-    white: hex_toRGBA('#FFFFFF'),
-    cyan: hex_toRGBA('#00FFFF'),
-    silver: hex_toRGBA('#C0C0C0'),
-    blue: hex_toRGBA('#0000FF'),
-    grey: hex_toRGBA('#808080'),
-    darkBlue: hex_toRGBA('#0000A0'),
-    black: hex_toRGBA('#000000'),
-    lightBlue: hex_toRGBA('#ADD8E6'),
-    orange: hex_toRGBA('#FFA500'),
-    purple: hex_toRGBA('#800080'),
-    brown: hex_toRGBA('#A52A2A'),
-    yellow: hex_toRGBA('#FFFF00'),
-    maroon: hex_toRGBA('#800000'),
-    lime: hex_toRGBA('#00FF00'),
-    green: hex_toRGBA('#008000'),
-    magenta: hex_toRGBA('#FF00FF'),
-    olive: hex_toRGBA('#808000'),
-    clear: Reactive.pack4(0, 0, 0, 0),
+export class Color {
+    static get red() { return hex_toRGBA('#FF0000'); }
+    static get white() { return hex_toRGBA('#FFFFFF'); }
+    static get cyan() { return hex_toRGBA('#00FFFF'); }
+    static get silver() { return hex_toRGBA('#C0C0C0'); }
+    static get blue() { return hex_toRGBA('#0000FF'); }
+    static get grey() { return hex_toRGBA('#808080'); }
+    static get darkBlue() { return hex_toRGBA('#0000A0'); }
+    static get black() { return hex_toRGBA('#000000'); }
+    static get lightBlue() { return hex_toRGBA('#ADD8E6'); }
+    static get orange() { return hex_toRGBA('#FFA500'); }
+    static get purple() { return hex_toRGBA('#800080'); }
+    static get brown() { return hex_toRGBA('#A52A2A'); }
+    static get yellow() { return hex_toRGBA('#FFFF00'); }
+    static get maroon() { return hex_toRGBA('#800000'); }
+    static get lime() { return hex_toRGBA('#00FF00'); }
+    static get green() { return hex_toRGBA('#008000'); }
+    static get magenta() { return hex_toRGBA('#FF00FF'); }
+    static get olive() { return hex_toRGBA('#808000'); }
+    static get clear() { return Reactive.pack4(0, 0, 0, 0); }
 }

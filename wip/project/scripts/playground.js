@@ -11,13 +11,18 @@ const Scene = require('Scene');
     const from = s.transform.position;
     const to = [.08, .12, 0];
 
-    p.transform.position = new PFTween(from, to, 2000)
-        .setEase(Ease.easePingpong)
-        .setLoops()
-        .setId('id')
-        .swizzle('xyy');
+    TouchGestures.onTap().subscribe(async () => {
+        PFTween.killAsync('id');
 
-    TouchGestures.onTap().subscribe(() => PFTween.kill('id'));
+        new PFTween(from, to, 2000)
+            .setEase(Ease.easePingpong)
+            .setDelay(1000)
+            .onComplete(() => Diagnostics.log('hi'))
+            .setLoops()
+            .setId('id')
+            .bind(v => p.transform.position = v.swizzle('xxy'))
+            .apply();
+    });
 })();
 
 
