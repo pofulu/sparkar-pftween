@@ -143,8 +143,18 @@ class PFTweenConfig {
     }
 }
 
-interface PFTweenClip {
-    (value: any): Promise<void>;
+type PFTweenClip = {
+    (value: any): Promise<{ value: any }>;
+}
+
+class PFTweenClipCancellation {
+    readonly value;
+
+    constructor(value) {
+        this.value = value;
+    }
+
+    cancel() { }
 }
 
 class PFTween {
@@ -165,14 +175,14 @@ class PFTween {
 
     static combine(...clips: PFTweenClip[]) {
         clips = clips.flat();
-        return result => Promise.all(clips.map(i => i(result))).then(endValues =>
-            Promise.resolve(result != undefined ? result : endValues)
+        return value => Promise.all(clips.map(i => i(value))).then(endValues =>
+            Promise.resolve(value != undefined ? value : endValues)
         );
     }
 
     static concat(...clips: PFTweenClip[]) {
         clips = clips.flat();
-        return result => clips.slice(1).reduce((pre, cur) => pre.then(cur), clips[0](result));
+        return value => clips.slice(1).reduce((pre, cur) => pre.then(cur), clips[0](value));
     }
 
     static kill(id: string | symbol) {
@@ -181,6 +191,10 @@ class PFTween {
 
     static hasId(id: string | symbol) {
         return PFTweenManager.hasId(id);
+    }
+
+    static newCancellation(value) {
+        return new PFTweenClipCancellation(value);
     }
 
     setEase(ease: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers) {
@@ -320,25 +334,21 @@ class PFTween {
     }
 
     get clip(): PFTweenClip {
-        let promiseResolve, promiseReject;
+        return value => new Promise((resolve, reject) => {
+            PFTweenManager.onKill(this.config.id, () =>
+                reject(`PFTween killed: ${String(this.config.id)}`)
+            );
 
-        this.onComplete(() => promiseResolve());
+            this.onComplete(() => resolve(value.value != undefined ? value : { value: value }));
+            const tweener = this.apply();
 
-        PFTweenManager.onKill(this.config.id, () => {
-            if (promiseReject != undefined) {
-                promiseReject(`PFTween killed: ${String(this.config.id)}`);
+            if (value instanceof PFTweenClipCancellation) {
+                value.cancel = () => {
+                    tweener.stop();
+                    reject('PFTween clip canceled');
+                }
             }
         });
-
-        return (value: any) => {
-            this.apply();
-            return new Promise<void>((resolve, reject) => {
-                promiseResolve = resolve;
-                promiseReject = reject;
-
-                promiseResolve(value);
-            });
-        }
     }
 
     get scalar() { return this.setAutoKill().apply().scalar; }
@@ -439,13 +449,12 @@ class PFTweener extends PFTweenValue {
         this.driver.reverse();
     }
 
-    pause() {
+    stop(reset = false) {
         this.driver.stop();
-    }
 
-    stop() {
-        this.driver.reset();
-        this.driver.stop();
+        if (reset) {
+            this.driver.reset();
+        }
     }
 
     isRunning() {
