@@ -1,7 +1,6 @@
 import Time from 'Time';
 import Animation from 'Animation';
 import Reactive from 'Reactive';
-import Diagnostics from 'Diagnostics';
 import Materials from 'Materials';
 
 const samplers = {
@@ -38,15 +37,29 @@ const samplers = {
     easeInOutBounce: Animation.samplers.easeInOutBounce,
     linearPingPong: (begin, end) => Animation.samplers.polyline({ keyframes: [begin, end, begin] }),
     easePingPong: (begin, end) => Animation.samplers.polybezier({ keyframes: [begin, end, begin] }),
-    punch: (begin, amount) => Animation.samplers.polyline({
-        keyframes: [
-            begin + (amount / 5) * 4,
-            begin - (amount / 5) * 3,
-            begin + (amount / 5) * 2,
-            begin - (amount / 5) * 1,
-            begin
-        ]
-    }),
+    punch: (begin, amount) => {
+        if (Array.isArray(begin) && Array.isArray(amount)) {
+            return Animation.samplers.polybezier({
+                keyframes: [
+                    [begin[0] + (amount[0] / 5) * 4, begin[1] + (amount[1] / 5) * 4, begin[2] + (amount[2] / 5) * 4],
+                    [begin[0] - (amount[0] / 5) * 3, begin[1] - (amount[1] / 5) * 3, begin[2] - (amount[2] / 5) * 3],
+                    [begin[0] + (amount[0] / 5) * 2, begin[1] + (amount[1] / 5) * 2, begin[2] + (amount[2] / 5) * 2],
+                    [begin[0] - (amount[0] / 5) * 1, begin[1] - (amount[1] / 5) * 1, begin[2] - (amount[2] / 5) * 1],
+                    [begin[0], begin[1], begin[2]]
+                ]
+            })
+        } else {
+            return Animation.samplers.polybezier({
+                keyframes: [
+                    begin + (amount / 5) * 4,
+                    begin - (amount / 5) * 3,
+                    begin + (amount / 5) * 2,
+                    begin - (amount / 5) * 1,
+                    begin
+                ]
+            })
+        }
+    },
 };
 
 const degreeToRadian = 0.0174532925;
