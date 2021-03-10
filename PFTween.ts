@@ -1,6 +1,8 @@
 import Time from 'Time';
 import Animation from 'Animation';
 import Reactive from 'Reactive';
+import Diagnostics from 'Diagnostics';
+import Materials from 'Materials';
 
 const samplers = {
     linear: Animation.samplers.linear,
@@ -104,9 +106,8 @@ class PFTweenEvent {
     dispose() {
         if (this.subscription != undefined) {
             this.subscription.unsubscribe();
+            this.subscription = undefined;
         }
-
-        this.events = [];
     }
 }
 
@@ -143,7 +144,7 @@ class PFTweenConfig {
 }
 
 interface PFTweenClip {
-    (): Promise<void>;
+    (value: any): Promise<void>;
 }
 
 class PFTween {
@@ -164,7 +165,7 @@ class PFTween {
 
     static combine(...clips: PFTweenClip[]) {
         clips = clips.flat();
-        return result => Promise.all(clips.map(i => i())).then(endValues =>
+        return result => Promise.all(clips.map(i => i(result))).then(endValues =>
             Promise.resolve(result != undefined ? result : endValues)
         );
     }
@@ -202,6 +203,20 @@ class PFTween {
         return this;
     }
 
+    setId(id: string | symbol) {
+        this.config.id = id;
+        return this;
+    }
+
+    setAutoKill() {
+        if (this.config.id == undefined) {
+            this.setId(Symbol());
+        }
+
+        this.onComplete(() => PFTweenManager.kill(this.config.id));
+        return this;
+    }
+
     onStart(callback: (value: PFTweenValue) => void) {
         this.config.events.onStartEvent.add(callback);
         return this;
@@ -217,18 +232,72 @@ class PFTween {
         return this;
     }
 
-    setId(id: string | symbol) {
-        this.config.id = id;
+    onStartVisible(sceneObject: SceneObjectBase) {
+        this.onStart(() => sceneObject.hidden = false);
         return this;
     }
 
-    setAutoKill() {
-        if (this.config.id == undefined) {
-            this.setId(Symbol());
-        }
+    onAnimatingVisibleOnly(sceneObject: SceneObjectBase) {
+        this.onStartVisible(sceneObject);
+        this.onCompleteHidden(sceneObject);
+        return this;
+    }
 
-        this.onComplete(() => PFTweenManager.kill(this.config.id));
+    onStartHidden(sceneObject: SceneObjectBase) {
+        this.onStart(() => sceneObject.hidden = true);
+        return this;
+    }
 
+    onCompleteVisible(sceneObject: SceneObjectBase) {
+        this.onComplete(() => sceneObject.hidden = false);
+        return this;
+    }
+
+    onCompleteHidden(sceneObject: SceneObjectBase) {
+        this.onComplete(() => sceneObject.hidden = true);
+        return this;
+    }
+
+    onCompleteResetPosition(sceneObject: SceneObjectBase) {
+        const original = Reactive.pack3(
+            sceneObject.transform.x.pinLastValue(),
+            sceneObject.transform.y.pinLastValue(),
+            sceneObject.transform.z.pinLastValue(),
+        );
+
+        this.onComplete(() => sceneObject.transform.position = original);
+        return this;
+    }
+
+    onCompleteResetRotation(sceneObject: SceneObjectBase) {
+        const original = {
+            x: sceneObject.transform.rotationX.pinLastValue(),
+            y: sceneObject.transform.rotationY.pinLastValue(),
+            z: sceneObject.transform.rotationZ.pinLastValue(),
+        };
+
+        this.onComplete(() => {
+            sceneObject.transform.rotationX = original.x;
+            sceneObject.transform.rotationY = original.y;
+            sceneObject.transform.rotationZ = original.z;
+        });
+        return this;
+    }
+
+    onCompleteResetScale(sceneObject: SceneObjectBase) {
+        const original = Reactive.scale(
+            sceneObject.transform.scaleX.pinLastValue(),
+            sceneObject.transform.scaleY.pinLastValue(),
+            sceneObject.transform.scaleZ.pinLastValue(),
+        );
+
+        this.onComplete(() => sceneObject.transform.scale = original);
+        return this;
+    }
+
+    onCompleteResetOpacity(material: MaterialBase) {
+        const original = material.opacity.pinLastValue();
+        this.onComplete(() => material.opacity = original);
         return this;
     }
 
@@ -242,6 +311,10 @@ class PFTween {
         return tweener;
     }
 
+    /**
+     * Take input numbers and output them in a different order. 
+     * Input values correspond to the swizzle value (xyzw) in the order theyre inputted. For example, an input of (1,2,3) and a swizzle value of (yxz) would output (2,1,3). You can also use 0 and 1. For example, a swizzle value of (x01) would output (1,0,1). 
+     */
     swizzle(specifier: string) {
         return this.setAutoKill().apply().swizzle(specifier);
     }
@@ -253,15 +326,17 @@ class PFTween {
 
         PFTweenManager.onKill(this.config.id, () => {
             if (promiseReject != undefined) {
-                promiseReject();
+                promiseReject(`PFTween killed: ${String(this.config.id)}`);
             }
         });
 
-        return () => {
+        return (value: any) => {
             this.apply();
             return new Promise<void>((resolve, reject) => {
                 promiseResolve = resolve;
                 promiseReject = reject;
+
+                promiseResolve(value);
             });
         }
     }
@@ -270,6 +345,7 @@ class PFTween {
     get pack2() { return this.setAutoKill().apply().pack2; }
     get pack3() { return this.setAutoKill().apply().pack3; }
     get pack4() { return this.setAutoKill().apply().pack4; }
+    /** This is equivalent to `.deg2rad` */
     get rotation() { return this.setAutoKill().apply().rotation; }
     get deg2rad() { return this.setAutoKill().apply().deg2rad; }
 }
@@ -281,6 +357,10 @@ class PFTweenValue {
         this.animate = animate;
     }
 
+    /**
+     * Take input numbers and output them in a different order. 
+     * Input values correspond to the swizzle value (xyzw) in the order theyre inputted. For example, an input of (1,2,3) and a swizzle value of (yxz) would output (2,1,3). You can also use 0 and 1. For example, a swizzle value of (x01) would output (1,0,1). 
+     */
     swizzle(specifier) {
         return swizzle(this.animate, specifier);
     }
@@ -301,13 +381,15 @@ class PFTweenValue {
         return this.swizzle(Array.isArray(this.animate) ? 'xyzw' : 'xxxx');
     }
 
+    /** This is equivalent to `.deg2rad` */
+    get rotation() {
+        return this.deg2rad;
+    }
+
     get deg2rad() {
         return this.scalar.mul(degreeToRadian);
     }
 
-    get rotation() {
-        return this.deg2rad;
-    }
 }
 
 class PFTweener extends PFTweenValue {
@@ -371,12 +453,8 @@ class PFTweener extends PFTweenValue {
     }
 }
 
-/**
- * Convert scalar signal to number, or the signal that contains 'xyzw' to array of numbers.
- * @param {*} signal 
- * @returns {number | number[]}
- */
-function toNumber(signal) {
+/** Convert scalar signal to number, or the signal that contains 'xyzw' to array of numbers.*/
+function toNumber(signal: any): number | number[] {
     if (typeof signal == 'number') {
         return signal;
     }
@@ -417,11 +495,8 @@ function toNumber(signal) {
 /**
  * Take input numbers and output them in a different order. 
  * Input values correspond to the swizzle value (xyzw) in the order theyre inputted. For example, an input of (1,2,3) and a swizzle value of (yxz) would output (2,1,3). You can also use 0 and 1. For example, a swizzle value of (x01) would output (1,0,1). 
- * @param {*} value A number or vector that you want to reorder. 
- * @param {string} specifier The order to output the values. Use (xyzw) and (01).
- * @returns {*} The values in your chosen order.
  */
-function swizzle(value, specifier) {
+function swizzle(value: any, specifier: string): any {
     const isArray = Array.isArray(value);
 
     const signal = element => {
