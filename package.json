@@ -1,6 +1,6 @@
 {
   "name": "sparkar-pftween",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "description": "A wrapped SparkAR animation tool",
   "main": "PFTween.js",
   "author": "Pofu Lu",
@@ -12,7 +12,7 @@
     "pofu"
   ],
   "files": [
-    "./PFTween.js"
+    "./PFTween.ts"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

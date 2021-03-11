@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "baseUrl": "C:/Users/Rumu/AppData/Local/Temp/1bcf-9a64-375d-f172/1297a6935bb7c42638159e3da50960efb",
+    "checkJs": true,
+    "esModuleInterop": true,
+    "lib": [
+      "ES2019"
+    ],
+    "outDir": "C:/Users/Rumu/AppData/Local/Temp/1bcf-9a64-375d-f172/1297a6935bb7c42638159e3da50960efb/out-dir",
+    "paths": {
+      "*": [
+        "skylight-typedefs/*",
+        "skylight-node_modules/*"
+      ]
+    },
+    "typeRoots": [
+      "C:/Users/Rumu/AppData/Local/Temp/1bcf-9a64-375d-f172/1297a6935bb7c42638159e3da50960efb/skylight-node_modules/@types"
+    ],
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "./**/*.js",
+    "./**/*.ts"
+  ]
+}
