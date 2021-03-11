@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
     "allowJs": true,
-    "baseUrl": "C:/Users/Rumu/AppData/Local/Temp/1bcf-9a64-375d-f172/1297a6935bb7c42638159e3da50960efb",
+    "baseUrl": "C:/Users/Rumu/AppData/Local/Temp/99e5-37a2-656c-212d/1297a6935bb7c42638159e3da50960efb",
     "checkJs": true,
     "esModuleInterop": true,
     "lib": [
       "ES2019"
     ],
-    "outDir": "C:/Users/Rumu/AppData/Local/Temp/1bcf-9a64-375d-f172/1297a6935bb7c42638159e3da50960efb/out-dir",
+    "outDir": "C:/Users/Rumu/AppData/Local/Temp/99e5-37a2-656c-212d/1297a6935bb7c42638159e3da50960efb/out-dir",
     "paths": {
       "*": [
         "skylight-typedefs/*",
@@ -15,7 +15,7 @@
       ]
     },
     "typeRoots": [
-      "C:/Users/Rumu/AppData/Local/Temp/1bcf-9a64-375d-f172/1297a6935bb7c42638159e3da50960efb/skylight-node_modules/@types"
+      "C:/Users/Rumu/AppData/Local/Temp/99e5-37a2-656c-212d/1297a6935bb7c42638159e3da50960efb/skylight-node_modules/@types"
     ],
     "types": [
       "node"
