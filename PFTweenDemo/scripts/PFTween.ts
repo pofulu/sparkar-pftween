@@ -3,7 +3,7 @@ import Animation from 'Animation';
 import Reactive from 'Reactive';
 import Materials from 'Materials';
 import Diagnostics from 'Diagnostics';
-import BezierEasing from './BezierEasing';
+import { ScalarSignal } from 'ReactiveModule';
 
 const samplers = {
     linear: Animation.samplers.linear,
@@ -154,8 +154,8 @@ class PFTweenConfig {
     sampler: ScalarSampler | ArrayOfScalarSamplers;
     events: PFTweenEvents;
     id: string | symbol;
-    useBezierEasing: boolean;
-    bezierEasing: BezierEasing;
+    useCustomCurve: boolean;
+    curve: ICurveProvider;
     begin: number | number[];
     end: number | number[];;
 
@@ -166,6 +166,14 @@ class PFTweenConfig {
 
 type PFTweenClip = {
     (value: any): Promise<{ value: any }>;
+}
+
+interface ICurveProvider {
+    evaluate(progress: number): number | ScalarSignal;
+}
+
+function instanceOfICurveProvider(object: any): object is ICurveProvider {
+    return 'evaluate' in object;
 }
 
 class PFTweenClipCancellation {
@@ -218,22 +226,16 @@ class PFTween {
 
     setEase(ease: (begin: number, end: number) => ScalarSampler): PFTween;
     setEase(ease: (begin: number[], end: number[]) => ArrayOfScalarSamplers): PFTween;
-    setEase(p1: number, p2: number, p3: number, p4: number): PFTween
+    setEase(curveProvider: ICurveProvider): PFTween
     setEase() {
-        if (arguments.length == 1) {
-            this.config.useBezierEasing = false;
-            this.config.bezierEasing = undefined;
-            this.config.sampler = arguments[0](this.config.begin, this.config.end);
-        }
-        else if (arguments.length == 4
-            && typeof arguments[0] == 'number'
-            && typeof arguments[1] == 'number'
-            && typeof arguments[2] == 'number'
-            && typeof arguments[3] == 'number'
-        ) {
-            this.config.useBezierEasing = true;
-            this.config.bezierEasing = new BezierEasing(arguments[0], arguments[1], arguments[2], arguments[3]);
+        if (arguments.length == 1 && instanceOfICurveProvider(arguments[0])) {
+            this.config.useCustomCurve = true;
+            this.config.curve = arguments[0];
             this.config.sampler = undefined;
+        } else if (arguments.length == 1) {
+            this.config.useCustomCurve = false;
+            this.config.curve = undefined;
+            this.config.sampler = arguments[0](this.config.begin, this.config.end);
         }
 
         return this;
@@ -470,9 +472,9 @@ class PFTweener extends PFTweenValue {
         const driver = Animation.timeDriver({ durationMilliseconds: config.durationMilliseconds, loopCount: config.loopCount, mirror: config.isMirror });
         let tween;
 
-        if (config.useBezierEasing) {
+        if (config.useCustomCurve) {
             const progress = Animation.animate(driver, Animation.samplers.linear(0, 1));
-            const y = config.bezierEasing.evaluate(progress);
+            const y = config.curve.evaluate(progress);
             tween = super(Reactive.toRange(y, config.begin, config.end));
         } else {
             tween = super(Animation.animate(driver, config.sampler));
@@ -621,9 +623,5 @@ function swizzle(value: any, specifier: string): any {
         default: throw `Invalid swizzle specifier: '${specifier}'`;
     }
 }
-
-// function remap(value, low1, high1, low2, high2) {
-//     return low2 + (high2 - low2) * (value - low1) / (high1 - low1);
-// }
 
 export { samplers as Ease, PFTween };
