@@ -95,7 +95,7 @@ const Diagnostics = require('Diagnostics');
 
     await new PFTween(0, 0.2, 500).onStart(v => plane0.transform.x = v.scalar).clip();
     await new PFTween(0, 0.1, 500).onStart(v => plane0.transform.y = v.scalar).clip();
-    await new PFTween(0.2, 0, 500).onStart(v => plane0.transform. = v.scalar).clip();
+    await new PFTween(0.2, 0, 500).onStart(v => plane0.transform.x = v.scalar).clip();
 })();
 ```
 
