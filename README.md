@@ -7,10 +7,9 @@
 
 ![index](https://github.com/pofulu/sparkar-pftween/blob/master/README.assets/index.gif?raw=true)
 
-PFTween is a wrapped Spark AR animation package. 
+**PFTween** is a wrapped Spark AR animation script package.
 
-You can handle animation in Spark AR just like [DOTween](http://dotween.demigiant.com) in Unity.
-
+You can use the similar syntax to [DOTween](http://dotween.demigiant.com) to create animation with JavaScript in Spark AR.
 
 
 ## Installation
