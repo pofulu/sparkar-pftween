@@ -62,7 +62,7 @@ There are three ways to use PFTween.
 const Scene = require('Scene'); 
 
 (async () => {
-	const plane0 = await Scene.root.findFirst('plane0');
+    const plane0 = await Scene.root.findFirst('plane0');
     plane0.transform.x = new PFTween(-0.2, 0.2, 1000).scalar;
 })();
 ```
@@ -74,7 +74,7 @@ const Scene = require('Scene');
 const TouchGestures = require('TouchGestures');
 
 (async () => {
-	const plane0 = await Scene.root.findFirst('plane0');
+    const plane0 = await Scene.root.findFirst('plane0');
     const animation = new PFTween(-0.2, 0.2, 1000)
         .onStart(v => plane0.transform.x = v.scalar)
         .apply();
