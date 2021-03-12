@@ -15,7 +15,7 @@ You can handle animation in Spark AR just like [DOTween](http://dotween.demigian
 
 ## Installation
 
-Import this package to your Spark AR project or use this with npm.
+You can import this package to your Spark AR project directly or use this with npm.
 
 ### Import
 
