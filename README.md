@@ -7,17 +7,16 @@
 
 ![index](https://github.com/pofulu/sparkar-pftween/blob/master/README.assets/index.gif?raw=true)
 
-PFTween is a wrapped Spark AR animation package. 
+**PFTween** is a wrapped Spark AR animation script package.
 
-You can handle animation in Spark AR just like [DOTween](http://dotween.demigiant.com) in Unity.
-
+You can use the similar syntax to [DOTween](http://dotween.demigiant.com) to create animation with JavaScript in Spark AR.
 
 
 ## Install
 
 [![NPM](https://nodei.co/npm/sparkar-pftween.png)](https://npmjs.org/package/sparkar-pftween)
 
-Import this package to your Spark AR project or use this with npm.
+You can import this package to your Spark AR project directly or use this with npm.
 
 ### Import
 
@@ -64,7 +63,7 @@ There are three ways to use PFTween.
 const Scene = require('Scene'); 
 
 (async () => {
-	const plane0 = await Scene.root.findFirst('plane0');
+    const plane0 = await Scene.root.findFirst('plane0');
     plane0.transform.x = new PFTween(-0.2, 0.2, 1000).scalar;
 })();
 ```
@@ -76,7 +75,7 @@ const Scene = require('Scene');
 const TouchGestures = require('TouchGestures');
 
 (async () => {
-	const plane0 = await Scene.root.findFirst('plane0');
+    const plane0 = await Scene.root.findFirst('plane0');
     const animation = new PFTween(-0.2, 0.2, 1000)
         .onStart(v => plane0.transform.x = v.scalar)
         .apply();
@@ -97,7 +96,7 @@ const Diagnostics = require('Diagnostics');
 
     await new PFTween(0, 0.2, 500).onStart(v => plane0.transform.x = v.scalar).clip();
     await new PFTween(0, 0.1, 500).onStart(v => plane0.transform.y = v.scalar).clip();
-    await new PFTween(0.2, 0, 500).onStart(v => plane0.transform. = v.scalar).clip();
+    await new PFTween(0.2, 0, 500).onStart(v => plane0.transform.x = v.scalar).clip();
 })();
 ```
 
