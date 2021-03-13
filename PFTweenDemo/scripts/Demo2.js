@@ -21,9 +21,9 @@ const Materials = require('Materials');
             .clip
     });
 
-    (async function play() {
+    (async function loopPlay() {
         await PFTween.combine(fadeout_clips)();
         await PFTween.combine(fadein_clips)();
-        play();
+        loopPlay();
     })();
 })();

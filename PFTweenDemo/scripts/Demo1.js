@@ -28,8 +28,8 @@ const Scene = require('Scene');
         return PFTween.concat(scaleIn, rot, scaleOut);
     });
 
-    (async function play() {
+    (async function loopPlay() {
         await PFTween.combine(clips)();
-        play();
+        loopPlay();
     })();
 })();

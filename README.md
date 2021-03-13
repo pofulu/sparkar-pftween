@@ -13,7 +13,9 @@ You can handle animation in Spark AR just like [DOTween](http://dotween.demigian
 
 
 
-## Installation
+## Install
+
+[![NPM](https://nodei.co/npm/sparkar-pftween.png)](https://npmjs.org/package/sparkar-pftween)
 
 Import this package to your Spark AR project or use this with npm.
 

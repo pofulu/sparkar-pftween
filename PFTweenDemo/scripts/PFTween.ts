@@ -1,8 +1,6 @@
 import Time from 'Time';
 import Animation from 'Animation';
 import Reactive from 'Reactive';
-import Materials from 'Materials';
-import Diagnostics from 'Diagnostics';
 import { ScalarSignal } from 'ReactiveModule';
 
 const samplers = {
@@ -146,7 +144,7 @@ class PFTweenEvents {
     }
 }
 
-class PFTweenConfig {
+type PFTweenConfig = {
     loopCount: number;
     isMirror: boolean;
     durationMilliseconds: number;
@@ -157,23 +155,15 @@ class PFTweenConfig {
     useCustomCurve: boolean;
     curve: ICurveProvider;
     begin: number | number[];
-    end: number | number[];;
-
-    constructor() {
-        this.id = Symbol();
-    }
+    end: number | number[];
 }
 
 type PFTweenClip = {
     (value: any): Promise<{ value: any }>;
 }
 
-interface ICurveProvider {
+export interface ICurveProvider {
     evaluate(progress: number): number | ScalarSignal;
-}
-
-function instanceOfICurveProvider(object: any): object is ICurveProvider {
-    return 'evaluate' in object;
 }
 
 class PFTweenClipCancellation {
@@ -192,22 +182,33 @@ class PFTween {
     constructor(begin: number, end: number, durationMilliseconds: number);
     constructor(begin: number[], end: number[], durationMilliseconds: number);
     constructor(begin: any, end: any, durationMilliseconds: number) {
-        this.config = new PFTweenConfig();
-        this.config.events = new PFTweenEvents();
-        this.config.durationMilliseconds = durationMilliseconds;
-        this.config.sampler = samplers.linear(begin, end);
-        this.config.begin = toNumber(begin);
-        this.config.end = toNumber(end);
+        this.config = {
+            loopCount: 1,
+            isMirror: false,
+            durationMilliseconds: durationMilliseconds,
+            delayMilliseconds: 0,
+            sampler: samplers.linear(begin, end),
+            events: new PFTweenEvents(),
+            id: undefined,
+            useCustomCurve: false,
+            curve: undefined,
+            begin: toNumber(begin),
+            end: toNumber(end),
+        }
     }
 
-    static combine(...clips: PFTweenClip[]) {
+    static combine(clips: PFTweenClip[]): PFTweenClip;
+    static combine(...clips: PFTweenClip[]): PFTweenClip;
+    static combine(...clips: any): PFTweenClip {
         clips = clips.flat();
         return value => Promise.all(clips.map(i => i(value))).then(endValues =>
             Promise.resolve(value != undefined ? value : endValues)
         );
     }
 
-    static concat(...clips: PFTweenClip[]) {
+    static concat(clips: PFTweenClip[]): PFTweenClip;
+    static concat(...clips: PFTweenClip[]): PFTweenClip;
+    static concat(...clips: any): PFTweenClip {
         clips = clips.flat();
         return value => clips.slice(1).reduce((pre, cur) => pre.then(cur), clips[0](value));
     }
@@ -491,14 +492,16 @@ class PFTweener extends PFTweenValue {
             driver.start();
         };
 
-        PFTweenManager.onKill(config.id, () => {
-            config.events.dispose();
-            driver.stop();
-        });
+        if (config.id != undefined) {
+            PFTweenManager.onKill(config.id, () => {
+                config.events.dispose();
+                driver.stop();
+            });
+        }
     }
 
     start() {
-        if (this.config.delayMilliseconds) {
+        if (this.config.delayMilliseconds != 0) {
             Time.setTimeout(this.play, this.config.delayMilliseconds);
         } else {
             this.play();
@@ -531,6 +534,9 @@ class PFTweener extends PFTweenValue {
     }
 }
 
+function instanceOfICurveProvider(object: any): object is ICurveProvider {
+    return 'evaluate' in object;
+}
 /** Convert scalar signal to number, or the signal that contains 'xyzw' to array of numbers.*/
 function toNumber(signal: any): number | number[] {
     if (typeof signal == 'number') {
