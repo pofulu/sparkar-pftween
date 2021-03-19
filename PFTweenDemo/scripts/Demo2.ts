@@ -1,6 +1,5 @@
 import { Ease, PFTween } from './PFTween';
-
-const Materials = require('Materials');
+import Materials from 'Materials';
 
 (async () => {
     const mat_planes = await Materials.findUsingPattern('demo2.plane*');

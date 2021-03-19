@@ -1,7 +1,6 @@
 import { PFTween, Ease } from './PFTween';
-
-const Scene = require('Scene');
-const Time = require('Time');
+import Time from 'Time';
+import Scene from 'Scene';
 
 (async () => {
     const root = await Scene.root.findFirst('demo0');

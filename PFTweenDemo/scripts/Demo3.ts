@@ -1,7 +1,6 @@
 import BezierEasing from './BezierEasing';
 import { PFTween } from './PFTween';
-
-const Scene = require('Scene');
+import Scene from 'Scene';
 
 (async () => {
     const root = await Scene.root.findFirst('demo3');
