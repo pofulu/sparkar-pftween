@@ -62,27 +62,34 @@ export default class {
     private sampler;
 
     constructor(mX1: number, mY1: number, mX2: number, mY2: number) {
-        if (mX1 === mY1 && mX2 === mY2) {
-            this.sampler = function linear(progress) { return progress };
-        } else {
-            const getTForX = (aX) => {
-                const slope = getSlope(aX, mX1, mX2);
+        const getTForX = (aX) => {
+            const slope = getSlope(aX, mX1, mX2);
 
-                return Reactive.ge(slope, NEWTON_MIN_SLOPE).ifThenElse(
-                    newtonRaphsonIterate(aX, aX, mX1, mX2),
-                    Reactive.eq(slope, 0).ifThenElse(
-                        aX,
-                        binarySubdivide(aX, aX, aX, mX1, mX2)
-                    )
-                );
-            }
-
-            this.sampler = function bezier(progress) {
-                // Because JavaScript number are imprecise, we should guarantee the extremes are right.
-                const progressIs0or1 = Reactive.eq(progress, 0).or(Reactive.eq(progress, 1));
-                return progressIs0or1.ifThenElse(progress, calcBezier(getTForX(progress), mY1, mY2));
-            }
+            return Reactive.ge(slope, NEWTON_MIN_SLOPE).ifThenElse(
+                newtonRaphsonIterate(aX, aX, mX1, mX2),
+                Reactive.eq(slope, 0).ifThenElse(
+                    aX,
+                    binarySubdivide(aX, aX, aX, mX1, mX2)
+                )
+            );
         }
+        const linear = function (progress) {
+            return progress;
+        }
+
+        const bezier = function (progress) {
+            // Because JavaScript number are imprecise, we should guarantee the extremes are right.
+            const progressIs0or1 = Reactive.eq(progress, 0).or(Reactive.eq(progress, 1));
+            return progressIs0or1.ifThenElse(progress, calcBezier(getTForX(progress), mY1, mY2));
+        }
+
+        this.sampler = progress => Reactive.and(
+            Reactive.eq(mX1, mY1),
+            Reactive.eq(mX2, mY2)
+        ).ifThenElse(
+            linear(progress),
+            bezier(progress)
+        );
     }
 
     evaluate(progress: number | ScalarSignal): ScalarSignal {
