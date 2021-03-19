@@ -9,7 +9,7 @@ import Scene from 'Scene';
     const bump = new PFTween(1, .2, 200)
         .onStart(v => heart.transform.scale = v.pack3)
         .setEase(Ease.punch)
-        .apply();
+        .build();
 
     Time.setInterval(() => bump.replay(), 800);
 })();

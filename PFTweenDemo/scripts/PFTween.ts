@@ -106,6 +106,24 @@ class PFTweenEvent {
         };
     }
 
+    invokeOnMonitor(signal: any) {
+        if (this.events.length == 0) {
+            return;
+        }
+
+        if (Array.isArray(signal)) {
+            let list = [];
+
+            for (let i = 0; i < signal.length; i++) {
+                list[i] = signal[i]
+            }
+
+            this.subscription = Reactive.monitorMany(list, { fireOnInitialValue: true }).select('newValues').subscribe(values => this.invoke(Object.values(values)));
+        } else {
+            this.subscription = signal.monitor({ fireOnInitialValue: true }).select('newValue').subscribe(value => this.invoke(value));
+        }
+    }
+
     invokeOnEvent(eventSource: EventSource) {
         if (this.events.length > 0) {
             this.subscription = eventSource.subscribe(value => this.invoke(value));
@@ -130,17 +148,20 @@ class PFTweenEvents {
     readonly onStartEvent: PFTweenEvent;
     readonly onCompleteEvent: PFTweenEvent;
     readonly onLoopEvent: PFTweenEvent;
+    readonly onUpdateEvent: PFTweenEvent;
 
     constructor() {
         this.onStartEvent = new PFTweenEvent();
         this.onCompleteEvent = new PFTweenEvent();
         this.onLoopEvent = new PFTweenEvent();
+        this.onUpdateEvent = new PFTweenEvent();
     }
 
     dispose() {
         this.onStartEvent.dispose();
         this.onCompleteEvent.dispose();
         this.onLoopEvent.dispose();
+        this.onUpdateEvent.dispose();
     }
 }
 
@@ -158,8 +179,8 @@ type PFTweenConfig = {
     end: number | number[];
 }
 
-type PFTweenClip = {
-    (value: any): Promise<{ value: any }>;
+interface PFTweenClip {
+    (value?: any): Promise<{ value: any }>;
 }
 
 export interface ICurveProvider {
@@ -179,21 +200,27 @@ class PFTweenClipCancellation {
 class PFTween {
     private config: PFTweenConfig;
 
-    constructor(begin: number, end: number, durationMilliseconds: number);
+    constructor(begin: ScalarSignal, end: ScalarSignal, durationMilliseconds: number);
+    constructor(begin: Point2DSignal, end: Point2DSignal, durationMilliseconds: number);
+    constructor(begin: PointSignal, end: PointSignal, durationMilliseconds: number);
+    constructor(begin: Point4DSignal, end: Point4DSignal, durationMilliseconds: number);
     constructor(begin: number[], end: number[], durationMilliseconds: number);
     constructor(begin: any, end: any, durationMilliseconds: number) {
+        begin = toNumber(begin);
+        end = toNumber(end);
+
         this.config = {
-            loopCount: 1,
+            loopCount: undefined,
             isMirror: false,
             durationMilliseconds: durationMilliseconds,
             delayMilliseconds: 0,
-            sampler: samplers.linear(begin, end),
             events: new PFTweenEvents(),
             id: undefined,
             useCustomCurve: false,
             curve: undefined,
-            begin: toNumber(begin),
-            end: toNumber(end),
+            begin: begin,
+            end: end,
+            sampler: samplers.linear(begin, end),
         }
     }
 
@@ -242,8 +269,22 @@ class PFTween {
         return this;
     }
 
-    setLoops(loopCount = Infinity) {
-        this.config.loopCount = loopCount;
+    setLoops(): PFTween;
+    setLoops(loopCount: number): PFTween;
+    setLoops(isMirror: boolean): PFTween;
+    setLoops(loopCount: number, isMirror: boolean): PFTween;
+    setLoops() {
+        if (arguments.length == 0) {
+            this.config.loopCount = Infinity;
+        } else if (arguments.length == 1 && typeof arguments[0] == 'boolean') {
+            this.config.loopCount = Infinity;
+            this.config.isMirror = arguments[0];
+        } else if (arguments.length == 1 && typeof arguments[0] == 'number') {
+            this.config.loopCount = arguments[0];
+        } else if (arguments.length == 2 && typeof arguments[0] == 'number' && typeof arguments[1] == 'boolean') {
+            this.config.loopCount = arguments[0];
+            this.config.isMirror = arguments[1];
+        }
         return this;
     }
 
@@ -278,6 +319,11 @@ class PFTween {
 
     onComplete(callback: () => void) {
         this.config.events.onCompleteEvent.add(callback);
+        return this;
+    }
+
+    onUpdate(callback: (v: number | number[]) => void) {
+        this.config.events.onUpdateEvent.add(callback);
         return this;
     }
 
@@ -355,7 +401,7 @@ class PFTween {
         return this;
     }
 
-    apply(autoPlay = true) {
+    build(autoPlay = true) {
         const tweener = new PFTweener(this.config);
 
         if (autoPlay) {
@@ -370,14 +416,21 @@ class PFTween {
      * Input values correspond to the swizzle value (xyzw) in the order theyre inputted. For example, an input of (1,2,3) and a swizzle value of (yxz) would output (2,1,3). You can also use 0 and 1. For example, a swizzle value of (x01) would output (1,0,1). 
      */
     swizzle(specifier: string) {
-        return this.setAutoKill().apply().swizzle(specifier);
+        return this.setAutoKill().build().swizzle(specifier);
     }
 
     get clip(): PFTweenClip {
+        if (this.config.loopCount == Infinity) {
+            throw `Don't use '.clip' with infinity loop. Use finite loop or use '.${this.build.name}()' instead.`;
+        }
+
         let promiseResolve, resolveResult;
 
-        this.onComplete(() => promiseResolve(resolveResult && resolveResult.value != undefined ? resolveResult : { value: resolveResult }));
-        const tweener = this.apply(false);
+        this.onComplete(() =>
+            promiseResolve(resolveResult && resolveResult.value != undefined ? resolveResult : { value: resolveResult })
+        );
+        
+        const tweener = this.build(false);
 
         return result => new Promise((resolve, reject) => {
             PFTweenManager.onKill(this.config.id, () =>
@@ -398,13 +451,15 @@ class PFTween {
         });
     }
 
-    get scalar() { return this.setAutoKill().apply().scalar; }
-    get pack2() { return this.setAutoKill().apply().pack2; }
-    get pack3() { return this.setAutoKill().apply().pack3; }
-    get pack4() { return this.setAutoKill().apply().pack4; }
+    get scalar() { return this.setAutoKill().build().scalar; }
+    get pack2() { return this.setAutoKill().build().pack2; }
+    get pack3() { return this.setAutoKill().build().pack3; }
+    get pack4() { return this.setAutoKill().build().pack4; }
+    get quaternion() { return this.setAutoKill().build().quaternion; }
+    get rgba() { return this.setAutoKill().build().rgba; }
     /** This is equivalent to `.deg2rad` */
-    get rotation() { return this.setAutoKill().apply().rotation; }
-    get deg2rad() { return this.setAutoKill().apply().deg2rad; }
+    get rotation() { return this.setAutoKill().build().rotation; }
+    get deg2rad() { return this.setAutoKill().build().deg2rad; }
 }
 
 class PFTweenValue {
@@ -412,6 +467,10 @@ class PFTweenValue {
 
     constructor(animate) {
         this.animate = animate;
+    }
+
+    get rawValue() {
+        return this.animate;
     }
 
     /**
@@ -454,6 +513,18 @@ class PFTweenValue {
         }
     }
 
+    get quaternion() {
+        if (Array.isArray(this.animate) && this.animate.length == 4) {
+            return Reactive.quaternion(this.animate[3], this.animate[0], this.animate[1], this.animate[2]);
+        } else {
+            throw `The length of tween value' mismatched, 'quaternion' expected 4 numbers but got ${Array.isArray(this.animate) ? this.animate.length : 1}.`;
+        }
+    }
+
+    get rgba() {
+        return this.pack4.toRGBA();
+    }
+
     /** This is equivalent to `.deg2rad` */
     get rotation() {
         return this.deg2rad;
@@ -471,22 +542,26 @@ class PFTweener extends PFTweenValue {
 
     constructor(config: PFTweenConfig) {
         const driver = Animation.timeDriver({ durationMilliseconds: config.durationMilliseconds, loopCount: config.loopCount, mirror: config.isMirror });
-        let tween;
+        let tween: PFTweenValue;
 
         if (config.useCustomCurve) {
             const progress = Animation.animate(driver, Animation.samplers.linear(0, 1));
             const y = config.curve.evaluate(progress);
-            tween = super(Reactive.toRange(y, config.begin, config.end));
+            tween = super(Reactive.toRange(y, config.begin, config.end)) as unknown as PFTweenValue;
         } else {
-            tween = super(Animation.animate(driver, config.sampler));
+            tween = super(Animation.animate(driver, config.sampler)) as unknown as PFTweenValue;
         }
+
+        // prevent unnecessary subscription 
+        if (config.loopCount != Infinity) {
+            config.events.onCompleteEvent.invokeOnEvent(driver.onCompleted());
+        }
+
+        config.events.onLoopEvent.invokeOnEvent(driver.onAfterIteration());
+        config.events.onUpdateEvent.invokeOnMonitor(tween.rawValue);
 
         this.driver = driver;
         this.config = config;
-
-        config.events.onCompleteEvent.invokeOnEvent(this.driver.onCompleted());
-        config.events.onLoopEvent.invokeOnEvent(this.driver.onAfterIteration());
-
         this.play = () => {
             config.events.onStartEvent.invoke(tween);
             driver.start();
@@ -529,14 +604,15 @@ class PFTweener extends PFTweenValue {
         }
     }
 
-    isRunning() {
-        this.driver.isRunning();
+    get isRunning() {
+        return this.driver.isRunning();
     }
 }
 
 function instanceOfICurveProvider(object: any): object is ICurveProvider {
     return 'evaluate' in object;
 }
+
 /** Convert scalar signal to number, or the signal that contains 'xyzw' to array of numbers.*/
 function toNumber(signal: any): number | number[] {
     if (typeof signal == 'number') {
@@ -548,32 +624,19 @@ function toNumber(signal: any): number | number[] {
     }
 
     if (signal.pinLastValue) {
-        return signal.pinLastValue();
+        if (typeof signal.pinLastValue() == 'number') {
+            return signal.pinLastValue();
+        } else {
+            let arr = [];
+            if (signal.x && signal.x.pinLastValue) arr.push(signal.x.pinLastValue());
+            if (signal.y && signal.y.pinLastValue) arr.push(signal.y.pinLastValue());
+            if (signal.z && signal.z.pinLastValue) arr.push(signal.z.pinLastValue());
+            if (signal.w && signal.w.pinLastValue) arr.push(signal.w.pinLastValue());
+            return arr;
+        }
     }
 
-    let arr;
-
-    if (signal.x && signal.x.pinLastValue) {
-        arr = arr ? arr : [];
-        arr.push(signal.x.pinLastValue());
-    }
-
-    if (signal.y && signal.y.pinLastValue) {
-        arr = arr ? arr : [];
-        arr.push(signal.y.pinLastValue());
-    }
-
-    if (signal.z && signal.z.pinLastValue) {
-        arr = arr ? arr : [];
-        arr.push(signal.z.pinLastValue());
-    }
-
-    if (signal.w && signal.w.pinLastValue) {
-        arr = arr ? arr : [];
-        arr.push(signal.w.pinLastValue());
-    }
-
-    return arr;
+    return undefined;
 }
 
 /**

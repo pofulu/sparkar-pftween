@@ -14,52 +14,36 @@ You can use the similar syntax to [DOTween](http://dotween.demigiant.com) to cre
 
 ## Install
 
-[![NPM](https://nodei.co/npm/sparkar-pftween.png)](https://npmjs.org/package/sparkar-pftween)
+[![NPM](https://nodei.co/npm/sparkar-pftween.png?compact=true)](https://nodei.co/npm/sparkar-pftween.png?compact=true)
 
-You can import this package to your Spark AR project directly or use this with npm.
+You can download script and import it into your Spark AR project, or use this with npm.
 
 ### Import
 
+0. [Download PFTween.ts](https://github.com/pofulu/sparkar-pftween/raw/develop/PFTweenDemo/scripts/PFTween.ts) (Right click and Save as)
 
-
-0. [Download PFTween](https://github.com/pofulu/sparkar-pftween/raw/develop/PFTweenDemo/scripts/PFTween.ts) (Right click and Save as)
-1. Drag/Import to Assets category in Spark AR. (Spark AR support multiple script files after [v75](https://sparkar.facebook.com/ar-studio/learn/documentation/changelog#75))
+1. Drag/Import it into your project. ([Spark AR support TypeScript since v105](https://sparkar.facebook.com/ar-studio/learn/scripting/typescript-support))
 2. Import `Ease` and `PFTween` module at the top of your script.
     ```javascript
     import { Ease, PFTween } from './PFTween';
-
+    
     // Your script...
     ```
 
 
-3. You can also [Click Here to Download Sample Projects](https://yehonal.github.io/DownGit/#home?url=https://github.com/pofulu/sparkar-pftween/tree/master/PFTweenDemo).
-
-
-
-### npm(WIP)
-
-0. Add package with npm or yarn
-
-    ```
-    npm i sparkar-pftween
-    ```
-    or
-    ```
-    yarn add sparkar-pftween
-    ```
-1. Import `Ease` and `PFTween` module at the top of your script.
-  
-    ```javascript
-    import { Ease, PFTween } from 'sparkar-pftween';
-	```
+3. You can also [Click Here to Download Sample Project](https://github.com/pofulu/sparkar-pftween/releases/latest/download/PFTweenDemo.arprojpkg).
 
 
 
 ## Usage
 
-There are three ways to use PFTween.
+### Create Animation
 
-### 1. Basic
+Three ways to create animation with PFTween.
+
+#### 1. Basic
+
+Create and use once.
 
 ```javascript
 const Scene = require('Scene'); 
@@ -70,7 +54,9 @@ const Scene = require('Scene');
 })();
 ```
 
-### 2. Reusable
+#### 2. Reusable
+
+Create and you can reuse/control it with `stop()`, `start()`,`repaly()`......
 
 ```js
 const Scene = require('Scene');
@@ -80,13 +66,15 @@ const TouchGestures = require('TouchGestures');
     const plane0 = await Scene.root.findFirst('plane0');
     const animation = new PFTween(-0.2, 0.2, 1000)
         .onStart(v => plane0.transform.x = v.scalar)
-        .apply();
+        .build();
 
     TouchGestures.onTap().subscribe(() => animaiton.replay());
 })();
 ```
 
-### 3. Clip - Play Animations in Sequence
+#### 3. Clip - Play Animations in Sequence
+
+Create then play tweens in sequence, or at the same time. And you can await the them to finish.
 
 ```js 
 const Scene = require('Scene');
@@ -95,12 +83,25 @@ const Diagnostics = require('Diagnostics');
 
 (async () => {
     const plane0 = await Scene.root.findFirst('plane0');
+    const a = new PFTween(0, 0.2, 500).onStart(v => plane0.transform.x = v.scalar).clip;
+    const b = new PFTween(0, 0.1, 500).onStart(v => plane0.transform.y = v.scalar).clip;
+    const c = new PFTween(0.2, 0, 500).onStart(v => plane0.transform.x = v.scalar).clip;
+    const combine = PFTween.combine(a, b);
+    const sequence = PFTween.concat(combine, c);
 
-    await new PFTween(0, 0.2, 500).onStart(v => plane0.transform.x = v.scalar).clip();
-    await new PFTween(0, 0.1, 500).onStart(v => plane0.transform.y = v.scalar).clip();
-    await new PFTween(0.2, 0, 500).onStart(v => plane0.transform.x = v.scalar).clip();
+    Diagnostics.log('Play');
+	await sequence();
+    Diagnostics.log('Finish');
 })();
 ```
+
+
+
+### More
+
+#### Add Ease, Delay, Loops, Callback for Events......
+
+
 
 
 
