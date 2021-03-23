@@ -45,8 +45,8 @@ import { PFTween } from './PFTween';
 import Scene from 'Scene';
 
 (async () => {
-	const plane0 = await Scene.root.findFirst('plane0');
-	plane0.transform.x = new PFTween(-0.2, 0.2, 1000).scalar;
+    const plane0 = await Scene.root.findFirst('plane0');
+    plane0.transform.x = new PFTween(-0.2, 0.2, 1000).scalar;
 })();
 ```
 
@@ -60,12 +60,12 @@ import Scene from 'Scene';
 import TouchGestures from 'TouchGestures';
 
 (async () => {
-  const plane0 = await Scene.root.findFirst('plane0');
-  const animation = new PFTween(-0.2, 0.2, 1000)
-		.onStart(v => plane0.transform.x = v.scalar)
-		.build();
+    const plane0 = await Scene.root.findFirst('plane0');
+    const animation = new PFTween(-0.2, 0.2, 1000)
+        .onStart(v => plane0.transform.x = v.scalar)
+        .build();
 
-  TouchGestures.onTap().subscribe(() => animaiton.replay());
+    TouchGestures.onTap().subscribe(() => animaiton.replay());
 })();
 ```
 
@@ -79,18 +79,18 @@ import Scene from 'Scene';
 import Diagnostics from 'Diagnostics';
 
 (async () => {
-  const plane0 = await Scene.root.findFirst('plane0');
-  const clip1 = new PFTween(0, 0.2, 500).onStart(v => plane0.transform.x = v.scalar).clip;
-  const clip2 = new PFTween(0, 0.1, 500).onStart(v => plane0.transform.y = v.scalar).clip;
-  const clip3 = new PFTween(0.2, 0, 500).onStart(v => plane0.transform.x = v.scalar).clip;
+    const plane0 = await Scene.root.findFirst('plane0');
+    const clip1 = new PFTween(0, 0.2, 500).onStart(v => plane0.transform.x = v.scalar).clip;
+    const clip2 = new PFTween(0, 0.1, 500).onStart(v => plane0.transform.y = v.scalar).clip;
+    const clip3 = new PFTween(0.2, 0, 500).onStart(v => plane0.transform.x = v.scalar).clip;
 
-  // The "combine" and "concat" are static functions
-  const combine = PFTween.combine(clip1, clip2);
-  const sequence = PFTween.concat(combine, clip3);
+    // The "combine" and "concat" are static functions
+    const combine = PFTween.combine(clip1, clip2);
+    const sequence = PFTween.concat(combine, clip3);
 
-  Diagnostics.log('Play');
-	await sequence();
-  Diagnostics.log('Finish');
+    Diagnostics.log('Play');
+    await sequence();
+    Diagnostics.log('Finish');
 })();
 ```
 
@@ -104,13 +104,13 @@ You can add **Ease**, **Delay**, **Loops** or callback for **Events** by chainin
 import { PFTween, Ease } from './PFTween';
 
 new PFTween(0, 1, 1000)
-  .setEase(Ease.easeInOutSine)
-	.setLoops(5, true)		// "true" means mirror loop, or you can use .setMirror()
-	.setDelay(1000)				// Delay 1 second to start
-	.onComplete(() => {})	// Invoke when animation finish
-	.onLoop(iter => {})		// Invoke when loops, 
-	.onUpdate(n => {})		// Invoke when animation play, the callback vlaue type is "number"
-	.swizzle('xxxy')			// Take input numbers and output them in a different order
+    .setEase(Ease.easeInOutSine)
+    .setLoops(5, true)		// "true" means mirror loop, or you can use .setMirror()
+    .setDelay(1000)				// Delay 1 second to start
+    .onComplete(() => {})	// Invoke when animation finish
+    .onLoop(iter => {})		// Invoke when loops, 
+    .onUpdate(n => {})		// Invoke when animation play, the callback vlaue type is "number"
+    .swizzle('xxxy')			// Take input numbers and output them in a different order
 ```
 
 There are more convenient and quick-to-use functions.
@@ -121,23 +121,22 @@ import Scene from 'Scene';
 import Materials from 'Materials';
 
 (async () => {
-	const plane0 = await Scene.root.findFirst('plane0');
-  const material0 = await Materials.findFirst('material0');
+    const plane0 = await Scene.root.findFirst('plane0');
+    const material0 = await Materials.findFirst('material0');
   
-  new PFTween(0, 1, 1000)
-		.onStartVisible(plane0)
-    .onStartHidden(plane0)
-    .onCompleteVisible(plane0)
-    .onCompleteHidden(plane0)
-    .onCompleteResetPosition(plane0)
-    .onCompleteResetRotation(plane0)
-    .onCompleteResetScale(plane0)
-    .onCompleteResetOpacity(material0)
-    .onAnimatingVisibleOnly(plane0)
-    .build()
+    new PFTween(0, 1, 1000)
+        .onStartVisible(plane0)
+        .onStartHidden(plane0)
+        .onCompleteVisible(plane0)
+        .onCompleteHidden(plane0)
+        .onCompleteResetPosition(plane0)
+        .onCompleteResetRotation(plane0)
+        .onCompleteResetScale(plane0)
+        .onCompleteResetOpacity(material0)
+        .onAnimatingVisibleOnly(plane0)
+        .build()
 })();
 ```
-
 
 
 ### Stop Animation
@@ -152,17 +151,17 @@ import Scene from 'Scene';
 import TouchGestures from 'TouchGestures';
 
 (async () => {
-  const plane0 = await Scene.root.findFirst('plane0');
+    const plane0 = await Scene.root.findFirst('plane0');
  
-  const controller = new PFTween(0, 1, 1000)
-  	.setLoops(true)
-  	.setId('foo')
-    .onStart(v => plane0.transform.x = v.scalar)
-    .build();
+    const controller = new PFTween(0, 1, 1000)
+        .setLoops(true)
+        .setId('foo')
+        .onStart(v => plane0.transform.x = v.scalar)
+        .build();
   
-  TouchGestures.onTap().subscribe(() => {
-    controller.stop();
-  });
+    TouchGestures.onTap().subscribe(() => {
+        controller.stop();
+    });
 })();
 ```
 
@@ -178,11 +177,11 @@ import Scene from 'Scene';
 import TouchGestures from 'TouchGestures';
 
 (async () => {
-  const plane0 = await Scene.root.findFirst('plane0');
+    const plane0 = await Scene.root.findFirst('plane0');
   
-	plane0.transform.x = new PFTween(0, 1, 1000).setLoops(true).setId('foo').scalar;
+    plane0.transform.x = new PFTween(0, 1, 1000).setLoops(true).setId('foo').scalar;
   
-  TouchGestures.onTap().subscribe(() => PFTween.kill('foo'));
+    TouchGestures.onTap().subscribe(() => PFTween.kill('foo'));
 })();
 ```
 
@@ -200,19 +199,19 @@ import Scene from 'Scene';
 import TouchGestures from 'TouchGestures';
 
 (async () => {
-  const plane0 = await Scene.root.findFirst('plane0');
+    const plane0 = await Scene.root.findFirst('plane0');
   
-  // PFTween.newCancellation is static function
-  const cancellation = PFTween.newClipCancellation();
+    // PFTween.newCancellation is static function
+    const cancellation = PFTween.newClipCancellation();
   
-  new PFTween(0, 1, 1000)
-  	.setLoops(true)
-    .onStart(v => plane0.transform.x = v.scalar)
-    .clip(cancellation);
+    new PFTween(0, 1, 1000)
+        .setLoops(true)
+        .onStart(v => plane0.transform.x = v.scalar)
+        .clip(cancellation);
   
-  TouchGestures.onTap().subscribe(() => {
-    cancellation.cancel();
-  });
+    TouchGestures.onTap().subscribe(() => {
+        cancellation.cancel();
+    });
 })();
 ```
 
