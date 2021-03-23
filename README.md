@@ -105,12 +105,12 @@ import { PFTween, Ease } from './PFTween';
 
 new PFTween(0, 1, 1000)
     .setEase(Ease.easeInOutSine)
-    .setLoops(5, true)		// "true" means mirror loop, or you can use .setMirror()
-    .setDelay(1000)				// Delay 1 second to start
-    .onComplete(() => {})	// Invoke when animation finish
-    .onLoop(iter => {})		// Invoke when loops, 
-    .onUpdate(n => {})		// Invoke when animation play, the callback vlaue type is "number"
-    .swizzle('xxxy')			// Take input numbers and output them in a different order
+    .setLoops(5, true)      // "true" means mirror loop, or you can use .setMirror()
+    .setDelay(1000)         // Delay 1 second to start
+    .onComplete(() => {})   // Invoke when animation finish
+    .onLoop(iter => {})     // Invoke when loops, 
+    .onUpdate(n => {})      // Invoke when animation play, the callback vlaue type is "number"
+    .swizzle('xxxy')        // Take input numbers and output them in a different order
 ```
 
 There are more convenient and quick-to-use functions.
