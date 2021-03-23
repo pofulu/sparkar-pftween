@@ -12,8 +12,8 @@
     "pofu"
   ],
   "files": [
-    "./index.js",
-    "./index.d.ts"
+    "index.js",
+    "index.d.ts"
   ],
   "types": "index.d.ts",
   "scripts": {

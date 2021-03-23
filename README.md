@@ -11,7 +11,6 @@
 
 You can use the similar syntax to [DOTween](http://dotween.demigiant.com) to create animation with JavaScript/TypeScript in Spark AR.
 
-
 ## Install
 
 [![NPM](https://nodei.co/npm/sparkar-pftween.png?compact=true)](https://nodei.co/npm/sparkar-pftween.png?compact=true)
@@ -143,29 +142,7 @@ import Materials from 'Materials';
 
 ### Stop Animation
 
-#### 1. Set ID
-
-You can add `.setId("id")`  to any of your tween, and then use the static function `PFTween.kill("id")` to kill and stop the animation. **Please note** that if you kill the animation, all of the **Events** will be removed. (The animation you killed can't be reused)
-
-```typescript
-import { PFTween } from './PFTween';
-import Scene from 'Scene';
-import TouchGestures from 'TouchGestures';
-
-(async () => {
-  const plane0 = await Scene.root.findFirst('plane0');
-  
-	plane0.transform.x = new PFTween(0, 1, 1000).setLoops(true).setId('foo').scalar;
-  
-  TouchGestures.onTap().subscribe(() => PFTween.kill('foo'));
-})();
-```
-
-If your animation is created with basic way such `.scalar`, `.pack2`, `.pack3`...... The animation will be auto killed after complete.
-
-
-
-#### 2. With Reusable Tween
+#### 1. With Reusable Tween
 
 If your animation is made with `.build()`, it's will return a controller. You can stop the animation with controller's  `stop()` function.
 
@@ -188,6 +165,28 @@ import TouchGestures from 'TouchGestures';
   });
 })();
 ```
+
+
+
+#### 2. Set ID
+
+You can add `.setId("id")`  to any of your tween, and then use the static function `PFTween.kill("id")` to kill and stop the animation. **Please note** that if you kill the animation, all of the events will be removed. (The animation you killed can't be reused)
+
+```typescript
+import { PFTween } from './PFTween';
+import Scene from 'Scene';
+import TouchGestures from 'TouchGestures';
+
+(async () => {
+  const plane0 = await Scene.root.findFirst('plane0');
+  
+	plane0.transform.x = new PFTween(0, 1, 1000).setLoops(true).setId('foo').scalar;
+  
+  TouchGestures.onTap().subscribe(() => PFTween.kill('foo'));
+})();
+```
+
+If your animation is created with basic way such `.scalar`, `.pack2`, `.pack3`...... The animation will be auto killed after complete.
 
 
 
