@@ -3,7 +3,7 @@ import Scene from 'Scene';
 
 (async () => {
     const root = await Scene.root.findFirst('demo1');
-    const planes = await root.findByPath('plane*');
+    const planes = await root.findByPath('plane*') as Plane[];
 
     const clips = planes.map((plane, index) => {
         const scaleIn = new PFTween(0, 0.4, 700)
@@ -19,12 +19,13 @@ import Scene from 'Scene';
             .onStart(v => plane.transform.scale = v.pack3)
             .clip;
 
-        const rot = new PFTween(0, 360, 2000)
+        const rotate = new PFTween(0, 360, 2000)
             .setEase(Ease.easeOutCubic)
-            .onStart(v => plane.transform.rotationZ = v.rotation)
+            .onStart(v => plane.transform.rotationZ = v.deg2rad)
             .clip;
 
-        return PFTween.concat(scaleIn, rot, scaleOut);
+        // Play the three above animations in sequence.
+        return PFTween.concat(scaleIn, rotate, scaleOut);
     });
 
     (async function loopPlay() {

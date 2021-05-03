@@ -21,8 +21,13 @@ import Materials from 'Materials';
     });
 
     (async function loopPlay() {
+        // Use .combine() to play all of animations at the same time.
         await PFTween.combine(fadeout_clips)();
+
+        // await all planes fade out then play the fadein animations.
         await PFTween.combine(fadein_clips)();
+
+        // await until all fade out finish then loop playing.
         loopPlay();
     })();
 })();

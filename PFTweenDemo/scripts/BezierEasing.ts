@@ -1,5 +1,4 @@
 import Reactive from 'Reactive';
-import { ScalarSignal } from 'ReactiveModule';
 
 // These values are established by empiricism with tests (tradeoff: performance VS precision)
 var NEWTON_ITERATIONS = 12;
