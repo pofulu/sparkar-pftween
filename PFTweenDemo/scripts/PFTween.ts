@@ -1,8 +1,8 @@
+import Diagnostics from 'Diagnostics';
 import Time from 'Time';
 import Animation from 'Animation';
 import Reactive from 'Reactive';
 import Patches from 'Patches';
-import Diagnostics from 'Diagnostics';
 
 const samplers = {
     linear: Animation.samplers.linear,
@@ -92,84 +92,91 @@ const PFTweenManager = new class {
 };
 
 class PFTweenEvent {
-    private events: ((value: any) => void)[];
-    private subscription: Subscription;
+    private _events: ((value: any) => void)[];
+    private _subscription: Subscription;
 
     constructor() {
-        this.events = [];
+        this._events = [];
+    }
+
+    get events() {
+        return this._events;
     }
 
     invoke(arg) {
-        if (this.events.length > 0) {
-            for (let i = 0; i < this.events.length; i++) {
-                this.events[i](arg);
+        if (this._events.length > 0) {
+            for (let i = 0; i < this._events.length; i++) {
+                this._events[i](arg);
             }
         };
     }
 
     invokeOnMonitor(signal: any) {
-        if (this.events.length == 0) {
+        if (this._events.length == 0) {
             return;
         }
 
         if (Array.isArray(signal)) {
-            let list = [];
+            let list: { [name: string]: ScalarSignal } = {};
 
             for (let i = 0; i < signal.length; i++) {
                 list[i] = signal[i]
             }
 
-            this.subscription = Reactive.monitorMany(list, { fireOnInitialValue: true }).select('newValues').subscribe(values => this.invoke(Object.values(values)));
+            this._subscription = Reactive.monitorMany(list, { fireOnInitialValue: true }).subscribe(values => this.invoke(Object.values(values.newValues)));
         } else {
-            this.subscription = signal.monitor({ fireOnInitialValue: true }).select('newValue').subscribe(value => this.invoke(value));
+            this._subscription = signal.monitor({ fireOnInitialValue: true }).select('newValue').subscribe(value => this.invoke(value));
         }
     }
 
-    invokeOnEvent(eventSource: EventSource) {
-        if (this.events.length > 0) {
-            this.subscription = eventSource.subscribe(value => this.invoke(value));
-        };
+    invokeOnEvent<T>(eventSource: EventSource<T>) {
+        if (this._events.length > 0) {
+            this._subscription = eventSource.subscribe(value => this.invoke(value));
+        }
     }
 
     add(callback: (value: any) => void) {
-        this.events.push(callback);
+        this._events.push(callback);
     }
 
     dispose() {
-        if (this.subscription != undefined) {
-            this.subscription.unsubscribe();
-            this.subscription = undefined;
+        if (this._subscription != undefined) {
+            this._subscription.unsubscribe();
+            this._subscription = undefined;
         }
 
-        this.events = [];
+        this._events = [];
     }
 }
 
 class PFTweenEvents {
-    readonly onStartEvent: PFTweenEvent;
-    readonly onCompleteEvent: PFTweenEvent;
-    readonly onLoopEvent: PFTweenEvent;
-    readonly onUpdateEvent: PFTweenEvent;
+    readonly onStart: PFTweenEvent;
+    readonly onComplete: PFTweenEvent;
+    readonly onLoop: PFTweenEvent;
+    readonly onUpdate: PFTweenEvent;
+    readonly onFinally: PFTweenEvent;
 
     constructor() {
-        this.onStartEvent = new PFTweenEvent();
-        this.onCompleteEvent = new PFTweenEvent();
-        this.onLoopEvent = new PFTweenEvent();
-        this.onUpdateEvent = new PFTweenEvent();
+        this.onStart = new PFTweenEvent();
+        this.onComplete = new PFTweenEvent();
+        this.onLoop = new PFTweenEvent();
+        this.onUpdate = new PFTweenEvent();
+        this.onFinally = new PFTweenEvent();
     }
 
     dispose() {
-        this.onStartEvent.dispose();
-        this.onCompleteEvent.dispose();
-        this.onLoopEvent.dispose();
-        this.onUpdateEvent.dispose();
+        this.onStart.dispose();
+        this.onComplete.dispose();
+        this.onLoop.dispose();
+        this.onUpdate.dispose();
+        this.onFinally.dispose();
     }
 }
 
 class PFTweenClipCancellation {
-    readonly value;
+    readonly value: any;
 
-    constructor(value) {
+    constructor(value: any) {
         this.value = value;
     }
 
@@ -180,7 +187,7 @@ interface IPFTweenClip {
     (value?: any): Promise<{ value: any }>;
 }
 
-export interface ICurveProvider {
+interface ICurveProvider {
     evaluate(progress: number | ScalarSampler): number | ScalarSignal;
 }
 
@@ -192,10 +199,6 @@ interface IPFTweenProgress {
     readonly durationMilliseconds: number;
     setProgress(progress: number): void;
     setProgress(progress: ScalarSignal): void;
-}
-
-function instanceOfPFTweenProgress(object: any): object is IPFTweenProgress {
-    return 'setProgress' in object && 'durationMilliseconds' in object;
 }
 
 type PFTweenConfig = {
@@ -247,7 +250,6 @@ class PFTween<T extends Number | Number[] | ScalarSignal | Point2DSignal | Point
             sampler: samplers.linear(begin, end),
         }
     }
-
 
     static combine(clips: IPFTweenClip[]): IPFTweenClip;
     static combine(...clips: IPFTweenClip[]): IPFTweenClip;
@@ -305,14 +307,28 @@ class PFTween<T extends Number | Number[] | ScalarSignal | Point2DSignal | Point
         }
     }
 
+    /**
+     * Stop and unsubscribe all events of the animation.
+     * @param id The id you set for to your animation.
+     */
     static kill(id: string | symbol) {
         PFTweenManager.kill(id);
     }
 
+    /**
+     * Check if the animation of this id exist.
+     * @param id 
+     * @returns 
+     */
     static hasId(id: string | symbol) {
         return PFTweenManager.hasId(id);
     }
 
+    /**
+     * Create a cancellation used for interrupt clips.
+     * @param value The args you want to pass to clip.
+     * @returns 
+     */
     static newClipCancellation(value?: any) {
         return new PFTweenClipCancellation(value);
     }
@@ -358,6 +374,9 @@ class PFTween<T extends Number | Number[] | ScalarSignal | Point2DSignal | Point
         return this;
     }
 
+    /**
+     * Delay to start animation, this will only delay the first time.
+     */
     setDelay(delayMilliseconds: number) {
         this.config.delayMilliseconds = delayMilliseconds;
         return this;
@@ -373,27 +392,27 @@ class PFTween<T extends Number | Number[] | ScalarSignal | Point2DSignal | Point
             this.setId(Symbol());
         }
 
-        this.onComplete(() => PFTweenManager.kill(this.config.id));
+        this.config.events.onFinally.add(() => PFTweenManager.kill(this.config.id));
         return this;
     }
 
     onStart(callback: (value: PFTweenValue) => void) {
-        this.config.events.onStartEvent.add(callback);
+        this.config.events.onStart.add(callback);
         return this;
     }
 
     onComplete(callback: () => void) {
-        this.config.events.onCompleteEvent.add(callback);
+        this.config.events.onComplete.add(callback);
         return this;
     }
 
     onUpdate(callback: (v: UpdateValueType<T>) => void) {
-        this.config.events.onUpdateEvent.add(callback);
+        this.config.events.onUpdate.add(callback);
         return this;
     }
 
     onLoop(callback: (iteration: number) => void) {
-        this.config.events.onLoopEvent.add(callback);
+        this.config.events.onLoop.add(callback);
         return this;
     }
 
@@ -478,7 +497,7 @@ class PFTween<T extends Number | Number[] | ScalarSignal | Point2DSignal | Point
      * @deprecated Please use `build()` instead. `apply` is equivalent to `build` now.
      */
     apply(autoPlay = true) {
-        this.build(autoPlay);
+        return this.build(autoPlay);
     }
 
     build(autoPlay = true) {
@@ -500,13 +519,20 @@ class PFTween<T extends Number | Number[] | ScalarSignal | Point2DSignal | Point
     }
 
     /**
+     * Convert 
+     * @param name 
+     * @returns 
+     */
+    patch(name: string) { return this.setAutoKill().build().patch(name); }
+
+    /**
      * Get an evaluable animation controller.
      * Please note that the `onCompleteEvent`, `onStartEvent`, `onLoopEvent` won't work.
      */
     get progress(): PFTweenProgress {
-        this.config.events.onCompleteEvent.dispose();
-        this.config.events.onStartEvent.dispose();
-        this.config.events.onLoopEvent.dispose();
+        this.config.events.onComplete.dispose();
+        this.config.events.onStart.dispose();
+        this.config.events.onLoop.dispose();
         return new PFTweenProgress(this.config);
     }
 
@@ -537,8 +563,6 @@ class PFTween<T extends Number | Number[] | ScalarSignal | Point2DSignal | Point
             }
         });
     }
-
-    patch(name: string) { return this.setAutoKill().build().patch(name); }
 
     get scalar() { return this.setAutoKill().build().scalar; }
     get pack2() { return this.setAutoKill().build().pack2; }
@@ -581,7 +605,6 @@ class PFTweenValue {
     patch(name: string) {
         if (!Array.isArray(this.animate)) {
             Patches.inputs.setScalar(name, this.animate);
-
         } else {
             switch (this.animate.length) {
                 case 2:
@@ -597,7 +620,7 @@ class PFTweenValue {
                     break;
 
                 default:
-                    break;
+                    throw `Unsupported value length: ${this.animate.length} values from script to patch with the name '${name}'`;
             }
         }
     }
@@ -612,7 +635,10 @@ class PFTweenValue {
 
     get pack2() {
         if (Array.isArray(this.animate)) {
-            return Reactive.pack2(this.animate[0], this.animate[1]);
+            return Reactive.pack2(
+                this.animate[0] ? this.animate[0] : 0,
+                this.animate[1] ? this.animate[1] : 0,
+            );
         } else {
             return Reactive.pack2(this.scalar, this.scalar);
         }
@@ -620,7 +646,11 @@ class PFTweenValue {
 
     get pack3() {
         if (Array.isArray(this.animate)) {
-            return Reactive.pack3(this.animate[0], this.animate[1], this.animate[2]);
+            return Reactive.pack3(
+                this.animate[0] ? this.animate[0] : 0,
+                this.animate[1] ? this.animate[1] : 0,
+                this.animate[2] ? this.animate[2] : 0,
+            );
         } else {
             return Reactive.pack3(this.scalar, this.scalar, this.scalar);
         }
@@ -635,7 +665,12 @@ class PFTweenValue {
 
     get pack4() {
         if (Array.isArray(this.animate)) {
-            return Reactive.pack4(this.animate[0], this.animate[1], this.animate[2], this.animate[3]);
+            return Reactive.pack4(
+                this.animate[0] ? this.animate[0] : 0,
+                this.animate[1] ? this.animate[1] : 0,
+                this.animate[2] ? this.animate[2] : 0,
+                this.animate[3] ? this.animate[3] : 0
+            );
         } else {
             return Reactive.pack4(this.scalar, this.scalar, this.scalar, this.scalar);
         }
@@ -665,7 +700,6 @@ class PFTweenValue {
     }
 }
 
-
 class PFTweenProgress implements IPFTweenProgress {
     readonly durationMilliseconds: number;
     private config: PFTweenConfig;
@@ -682,9 +716,9 @@ class PFTweenProgress implements IPFTweenProgress {
         if (this.config.useCustomCurve) {
             const progress = Animation.animate(driver, Animation.samplers.linear(0, 1));
             const y = this.config.curve.evaluate(progress);
-            this.config.events.onUpdateEvent.invokeOnMonitor(Animation.animate(Animation.valueDriver(y, 0, 1), Animation.samplers.linear(this.config.begin, this.config.end)));
+            this.config.events.onUpdate.invokeOnMonitor(Animation.animate(Animation.valueDriver(y, 0, 1), Animation.samplers.linear(this.config.begin, this.config.end)));
         } else {
-            this.config.events.onUpdateEvent.invokeOnMonitor(Animation.animate(driver, this.config.sampler));
+            this.config.events.onUpdate.invokeOnMonitor(Animation.animate(driver, this.config.sampler));
         }
     }
 }
@@ -695,7 +729,12 @@ class PFTweener extends PFTweenValue {
     private play: () => void;
 
     constructor(config: PFTweenConfig) {
-        const driver = Animation.timeDriver({ durationMilliseconds: config.durationMilliseconds, loopCount: config.loopCount, mirror: config.isMirror });
+        const driver = Animation.timeDriver({
+            durationMilliseconds: config.durationMilliseconds,
+            loopCount: config.loopCount,
+            mirror: config.isMirror
+        });
+
         let tween: PFTweenValue;
 
         if (config.useCustomCurve) {
@@ -708,18 +747,18 @@ class PFTweener extends PFTweenValue {
 
         // prevent unnecessary subscription 
         if (config.loopCount != Infinity) {
-            config.events.onCompleteEvent.invokeOnEvent(driver.onCompleted());
+            config.events.onComplete.invokeOnEvent(driver.onCompleted());
         } else {
-            config.events.onCompleteEvent.dispose();
+            config.events.onComplete.dispose();
         }
 
-        config.events.onLoopEvent.invokeOnEvent(driver.onAfterIteration());
-        config.events.onUpdateEvent.invokeOnMonitor(tween);
+        config.events.onLoop.invokeOnEvent(driver.onAfterIteration());
+        config.events.onUpdate.invokeOnMonitor(tween);
 
         this.driver = driver;
         this.config = config;
         this.play = () => {
-            config.events.onStartEvent.invoke(tween);
+            config.events.onStart.invoke(tween);
             driver.start();
         };
 
@@ -798,8 +837,8 @@ function toNumber(signal: any): number | number[] {
 function swizzle(value: any, specifier: string): any {
     const isArray = Array.isArray(value);
 
-    const signal = element => {
-        const swizzleSignal = property => {
+    const signal = (element: string) => {
+        const swizzleSignal = (property: string) => {
             if (typeof (value) == 'number') {
                 if (property == 'x') {
                     return value;
@@ -845,4 +884,4 @@ function swizzle(value: any, specifier: string): any {
     }
 }
 
-export { samplers as Ease, PFTween };
+export { samplers as Ease, PFTween, ICurveProvider };
