@@ -38,7 +38,7 @@ You can download script and import it into your Spark AR project, or use this wi
     ```
 
 
-3. You can also [Click Here to Download Sample Project](https://github.com/pofulu/sparkar-pftween/releases/latest/download/PFTweenDemo.arprojpkg).
+3. You can also [Click Here to Download Sample Project (v112)](https://github.com/pofulu/sparkar-pftween/releases/latest/download/PFTweenDemo.arprojpkg).
 
 
 
@@ -235,7 +235,7 @@ onMouthOpen.subscribe(() => play_punch_animation.replay());
 
 **`.clip`** is an asynchronous way to reuse animation based on `Promise`. With `clip`, you can play tween animation in sequence.
 
-E.g, `jump().then(scale).then(rotate).then(fadeout).then(......`
+E.g., `jump().then(scale).then(rotate).then(fadeout).then(......`
 
 In order to use `clip`, you must set the value with `onStart()`, and get `clip` instead of call `build()` at the end of `PFTween` chain.
 
@@ -342,7 +342,7 @@ import TouchGestures from 'TouchGestures';
 
 ### 2. Set ID
 
-You can add `.setId("id")`  to any of your tween, and then use the static function `PFTween.kill("id")` to kill and stop the animation. **Please note** that if you kill the animation, all of the events will be removed. (The animation you killed can't be reused)
+You can add `.setId("id")`  to any of your tween, and then use the static function `PFTween.kill("id")` to kill and stop the animation. Please note that if you kill the animation, all of the events will be removed. (i.e. The animation you killed can't be reused)
 
 ```typescript
 import { PFTween } from './PFTween';

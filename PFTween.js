@@ -4,10 +4,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PFTween = exports.Ease = void 0;
-//@ts-nocheck
 const Time_1 = __importDefault(require("Time"));
 const Animation_1 = __importDefault(require("Animation"));
 const Reactive_1 = __importDefault(require("Reactive"));
+const Patches_1 = __importDefault(require("Patches"));
 const samplers = {
     linear: Animation_1.default.samplers.linear,
     easeInQuad: Animation_1.default.samplers.easeInQuad,
@@ -91,60 +91,64 @@ const PFTweenManager = new class {
 };
 class PFTweenEvent {
     constructor() {
-        this.events = [];
+        this._events = [];
+    }
+    get events() {
+        return this._events;
     }
     invoke(arg) {
-        if (this.events.length > 0) {
-            for (let i = 0; i < this.events.length; i++) {
-                this.events[i](arg);
+        if (this._events.length > 0) {
+            for (let i = 0; i < this._events.length; i++) {
+                this._events[i](arg);
             }
         }
         ;
     }
     invokeOnMonitor(signal) {
-        if (this.events.length == 0) {
+        if (this._events.length == 0) {
             return;
         }
         if (Array.isArray(signal)) {
-            let list = [];
+            let list = {};
             for (let i = 0; i < signal.length; i++) {
                 list[i] = signal[i];
             }
-            this.subscription = Reactive_1.default.monitorMany(list, { fireOnInitialValue: true }).select('newValues').subscribe(values => this.invoke(Object.values(values)));
+            this._subscription = Reactive_1.default.monitorMany(list, { fireOnInitialValue: true }).subscribe(values => this.invoke(Object.values(values.newValues)));
         }
         else {
-            this.subscription = signal.monitor({ fireOnInitialValue: true }).select('newValue').subscribe(value => this.invoke(value));
+            this._subscription = signal.monitor({ fireOnInitialValue: true }).select('newValue').subscribe(value => this.invoke(value));
         }
     }
     invokeOnEvent(eventSource) {
-        if (this.events.length > 0) {
-            this.subscription = eventSource.subscribe(value => this.invoke(value));
+        if (this._events.length > 0) {
+            this._subscription = eventSource.subscribe(value => this.invoke(value));
         }
-        ;
     }
     add(callback) {
-        this.events.push(callback);
+        this._events.push(callback);
     }
     dispose() {
-        if (this.subscription != undefined) {
-            this.subscription.unsubscribe();
-            this.subscription = undefined;
+        if (this._subscription != undefined) {
+            this._subscription.unsubscribe();
+            this._subscription = undefined;
         }
-        this.events = [];
+        this._events = [];
     }
 }
 class PFTweenEvents {
     constructor() {
-        this.onStartEvent = new PFTweenEvent();
-        this.onCompleteEvent = new PFTweenEvent();
-        this.onLoopEvent = new PFTweenEvent();
-        this.onUpdateEvent = new PFTweenEvent();
+        this.onStart = new PFTweenEvent();
+        this.onComplete = new PFTweenEvent();
+        this.onLoop = new PFTweenEvent();
+        this.onUpdate = new PFTweenEvent();
+        this.onFinally = new PFTweenEvent();
     }
     dispose() {
-        this.onStartEvent.dispose();
-        this.onCompleteEvent.dispose();
-        this.onLoopEvent.dispose();
-        this.onUpdateEvent.dispose();
+        this.onStart.dispose();
+        this.onComplete.dispose();
+        this.onLoop.dispose();
+        this.onUpdate.dispose();
+        this.onFinally.dispose();
     }
 }
 class PFTweenClipCancellation {
@@ -152,6 +156,9 @@ class PFTweenClipCancellation {
         this.value = value;
     }
     cancel() { }
+}
+function instanceOfICurveProvider(object) {
+    return 'evaluate' in object;
 }
 class PFTween {
     constructor(begin, end, durationMilliseconds) {
@@ -179,12 +186,57 @@ class PFTween {
         clips = clips.flat();
         return value => clips.slice(1).reduce((pre, cur) => pre.then(cur), clips[0](value));
     }
+    static combineProgress(...progresses) {
+        progresses = progresses.flat();
+        const max = Math.max(...progresses.map(pftween => pftween.durationMilliseconds));
+        return {
+            get durationMilliseconds() { return max; },
+            setProgress(progress) {
+                for (let i = 0; i < progresses.length; i++) {
+                    const tween = progresses[i];
+                    tween.setProgress(Reactive_1.default.fromRange(progress, 0, tween.durationMilliseconds / max));
+                }
+            }
+        };
+    }
+    static concatProgerss(...progresses) {
+        progresses = progresses.flat();
+        const total = progresses
+            .map(pftween => pftween.durationMilliseconds)
+            .reduce((pre, cur) => pre + cur, 0);
+        return {
+            get durationMilliseconds() { return total; },
+            setProgress(progress) {
+                let last = 0;
+                for (let i = 0; i < progresses.length; i++) {
+                    const tween = progresses[i];
+                    const end = last + tween.durationMilliseconds / total;
+                    tween.setProgress(Reactive_1.default.fromRange(progress, last, end));
+                    last = end;
+                }
+            }
+        };
+    }
+    /**
+     * Stop and unsubscribe all events of the animation.
+     * @param id The id you set for to your animation.
+     */
     static kill(id) {
         PFTweenManager.kill(id);
     }
+    /**
+     * Check if the animation of this id exist.
+     * @param id
+     * @returns
+     */
     static hasId(id) {
         return PFTweenManager.hasId(id);
     }
+    /**
+     * Create a cancellation used for interrupt clips.
+     * @param value The args you want to pass to clip.
+     * @returns
+     */
     static newClipCancellation(value) {
         return new PFTweenClipCancellation(value);
     }
@@ -222,6 +274,9 @@ class PFTween {
         this.config.isMirror = isMirror;
         return this;
     }
+    /**
+     * Delay to start animation, this will only delay the first time.
+     */
     setDelay(delayMilliseconds) {
         this.config.delayMilliseconds = delayMilliseconds;
         return this;
@@ -234,27 +289,27 @@ class PFTween {
         if (this.config.id == undefined) {
             this.setId(Symbol());
         }
-        this.onComplete(() => PFTweenManager.kill(this.config.id));
+        this.config.events.onFinally.add(() => PFTweenManager.kill(this.config.id));
         return this;
     }
     onStart(callback) {
-        this.config.events.onStartEvent.add(callback);
+        this.config.events.onStart.add(callback);
         return this;
     }
     onComplete(callback) {
-        this.config.events.onCompleteEvent.add(callback);
+        this.config.events.onComplete.add(callback);
         return this;
     }
     onUpdate(callback) {
-        this.config.events.onUpdateEvent.add(callback);
+        this.config.events.onUpdate.add(callback);
         return this;
     }
     onLoop(callback) {
-        this.config.events.onLoopEvent.add(callback);
+        this.config.events.onLoop.add(callback);
         return this;
     }
     onStartVisible(sceneObject) {
-        this.onStart(() => sceneObject.hidden = false);
+        this.onStart(() => sceneObject.hidden = Reactive_1.default.val(false));
         return this;
     }
     onAnimatingVisibleOnly(sceneObject) {
@@ -263,15 +318,15 @@ class PFTween {
         return this;
     }
     onStartHidden(sceneObject) {
-        this.onStart(() => sceneObject.hidden = true);
+        this.onStart(() => sceneObject.hidden = Reactive_1.default.val(true));
         return this;
     }
     onCompleteVisible(sceneObject) {
-        this.onComplete(() => sceneObject.hidden = false);
+        this.onComplete(() => sceneObject.hidden = Reactive_1.default.val(false));
         return this;
     }
     onCompleteHidden(sceneObject) {
-        this.onComplete(() => sceneObject.hidden = true);
+        this.onComplete(() => sceneObject.hidden = Reactive_1.default.val(true));
         return this;
     }
     onCompleteResetPosition(sceneObject) {
@@ -313,7 +368,7 @@ class PFTween {
      * @deprecated Please use `build()` instead. `apply` is equivalent to `build` now.
      */
     apply(autoPlay = true) {
-        this.build(autoPlay);
+        return this.build(autoPlay);
     }
     build(autoPlay = true) {
         const tweener = new PFTweener(this.config);
@@ -328,6 +383,22 @@ class PFTween {
      */
     swizzle(specifier) {
         return this.setAutoKill().build().swizzle(specifier);
+    }
+    /**
+     * Convert
+     * @param name
+     * @returns
+     */
+    patch(name) { return this.setAutoKill().build().patch(name); }
+    /**
+     * Get an evaluable animation controller.
+     * Please note that the `onCompleteEvent`, `onStartEvent`, `onLoopEvent` won't work.
+     */
+    get progress() {
+        this.config.events.onComplete.dispose();
+        this.config.events.onStart.dispose();
+        this.config.events.onLoop.dispose();
+        return new PFTweenProgress(this.config);
     }
     get clip() {
         let promiseResolve, resolveResult;
@@ -361,6 +432,7 @@ class PFTween {
      */
     get rotation() { return this.setAutoKill().build().rotation; }
     get deg2rad() { return this.setAutoKill().build().deg2rad; }
+    get durationMilliseconds() { return this.config.durationMilliseconds; }
 }
 exports.PFTween = PFTween;
 class PFTweenValue {
@@ -377,6 +449,26 @@ class PFTweenValue {
     swizzle(specifier) {
         return swizzle(this.animate, specifier);
     }
+    patch(name) {
+        if (!Array.isArray(this.animate)) {
+            Patches_1.default.inputs.setScalar(name, this.animate);
+        }
+        else {
+            switch (this.animate.length) {
+                case 2:
+                    Patches_1.default.inputs.setPoint2D(name, Reactive_1.default.pack2(this.animate[0], this.animate[1]));
+                    break;
+                case 3:
+                    Patches_1.default.inputs.setPoint(name, Reactive_1.default.pack3(this.animate[0], this.animate[1], this.animate[2]));
+                    break;
+                case 4:
+                    Patches_1.default.inputs.setColor(name, Reactive_1.default.RGBA(this.animate[0], this.animate[1], this.animate[2], this.animate[3]));
+                    break;
+                default:
+                    throw `Unsupported value length: ${this.animate.length} values from script to patch with the name '${name}'`;
+            }
+        }
+    }
     get scalar() {
         if (Array.isArray(this.animate)) {
             return this.animate[0];
@@ -387,7 +479,7 @@ class PFTweenValue {
     }
     get pack2() {
         if (Array.isArray(this.animate)) {
-            return Reactive_1.default.pack2(this.animate[0], this.animate[1]);
+            return Reactive_1.default.pack2(this.animate[0] ? this.animate[0] : 0, this.animate[1] ? this.animate[1] : 0);
         }
         else {
             return Reactive_1.default.pack2(this.scalar, this.scalar);
@@ -395,7 +487,7 @@ class PFTweenValue {
     }
     get pack3() {
         if (Array.isArray(this.animate)) {
-            return Reactive_1.default.pack3(this.animate[0], this.animate[1], this.animate[2]);
+            return Reactive_1.default.pack3(this.animate[0] ? this.animate[0] : 0, this.animate[1] ? this.animate[1] : 0, this.animate[2] ? this.animate[2] : 0);
         }
         else {
             return Reactive_1.default.pack3(this.scalar, this.scalar, this.scalar);
@@ -409,7 +501,7 @@ class PFTweenValue {
     }
     get pack4() {
         if (Array.isArray(this.animate)) {
-            return Reactive_1.default.pack4(this.animate[0], this.animate[1], this.animate[2], this.animate[3]);
+            return Reactive_1.default.pack4(this.animate[0] ? this.animate[0] : 0, this.animate[1] ? this.animate[1] : 0, this.animate[2] ? this.animate[2] : 0, this.animate[3] ? this.animate[3] : 0);
         }
         else {
             return Reactive_1.default.pack4(this.scalar, this.scalar, this.scalar, this.scalar);
@@ -436,31 +528,52 @@ class PFTweenValue {
         return this.scalar.mul(degreeToRadian);
     }
 }
+class PFTweenProgress {
+    constructor(config) {
+        this.durationMilliseconds = config.durationMilliseconds;
+        this.config = config;
+    }
+    setProgress(progress) {
+        const driver = Animation_1.default.valueDriver(progress, 0, 1);
+        if (this.config.useCustomCurve) {
+            const progress = Animation_1.default.animate(driver, Animation_1.default.samplers.linear(0, 1));
+            const y = this.config.curve.evaluate(progress);
+            this.config.events.onUpdate.invokeOnMonitor(Animation_1.default.animate(Animation_1.default.valueDriver(y, 0, 1), Animation_1.default.samplers.linear(this.config.begin, this.config.end)));
+        }
+        else {
+            this.config.events.onUpdate.invokeOnMonitor(Animation_1.default.animate(driver, this.config.sampler));
+        }
+    }
+}
 class PFTweener extends PFTweenValue {
     constructor(config) {
-        const driver = Animation_1.default.timeDriver({ durationMilliseconds: config.durationMilliseconds, loopCount: config.loopCount, mirror: config.isMirror });
+        const driver = Animation_1.default.timeDriver({
+            durationMilliseconds: config.durationMilliseconds,
+            loopCount: config.loopCount,
+            mirror: config.isMirror
+        });
         let tween;
         if (config.useCustomCurve) {
             const progress = Animation_1.default.animate(driver, Animation_1.default.samplers.linear(0, 1));
             const y = config.curve.evaluate(progress);
-            tween = super(Reactive_1.default.toRange(y, config.begin, config.end));
+            tween = super(Animation_1.default.animate(Animation_1.default.valueDriver(y, 0, 1), Animation_1.default.samplers.linear(config.begin, config.end)));
         }
         else {
             tween = super(Animation_1.default.animate(driver, config.sampler));
         }
         // prevent unnecessary subscription 
         if (config.loopCount != Infinity) {
-            config.events.onCompleteEvent.invokeOnEvent(driver.onCompleted());
+            config.events.onComplete.invokeOnEvent(driver.onCompleted());
         }
         else {
-            config.events.onCompleteEvent.dispose();
+            config.events.onComplete.dispose();
         }
-        config.events.onLoopEvent.invokeOnEvent(driver.onAfterIteration());
-        config.events.onUpdateEvent.invokeOnMonitor(tween.rawValue);
+        config.events.onLoop.invokeOnEvent(driver.onAfterIteration());
+        config.events.onUpdate.invokeOnMonitor(tween);
         this.driver = driver;
         this.config = config;
         this.play = () => {
-            config.events.onStartEvent.invoke(tween);
+            config.events.onStart.invoke(tween);
             driver.start();
         };
         if (config.id != undefined) {
@@ -498,9 +611,6 @@ class PFTweener extends PFTweenValue {
         return this.driver.isRunning();
     }
 }
-function instanceOfICurveProvider(object) {
-    return 'evaluate' in object;
-}
 /** Convert scalar signal to number, or the signal that contains 'xyzw' to array of numbers.*/
 function toNumber(signal) {
     if (typeof signal == 'number') {
@@ -534,8 +644,8 @@ function toNumber(signal) {
  */
 function swizzle(value, specifier) {
     const isArray = Array.isArray(value);
-    const signal = element => {
-        const swizzleSignal = property => {
+    const signal = (element) => {
+        const swizzleSignal = (property) => {
             if (typeof (value) == 'number') {
                 if (property == 'x') {
                     return value;
@@ -544,7 +654,7 @@ function swizzle(value, specifier) {
                     throw `Specifier '${property}' in '${specifier}' can't be used with this signal.`;
                 }
             }
-            else if (value['pinLastValue'] != undefined) {
+            else if (value['pinLastValue'] != undefined && typeof value.pinLastValue() == 'number') {
                 if (property == 'x') {
                     return value;
                 }
