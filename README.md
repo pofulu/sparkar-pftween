@@ -13,9 +13,10 @@ You can use the similar syntax to [DOTween](http://dotween.demigiant.com) to cre
 
 - [Install](#install)
 - [Usage](#usage)
-- [Basic of PFTween](#basic-of-pftween---create-animation)
+- [Getting Started](#getting-started)
 - [Reuse the Animation](#reuse-the-animation)
-- [Clip](#clip---play-animations-in-sequence)
+- [Play Animations in Sequence](#play-animations-in-sequence)
+- [Play Animation with Progress](#play-animation-with-progress)
 - [Stop Animation](#stop-animation)
 - [Donations](#donations)
 
@@ -47,90 +48,50 @@ There are four ways to create animation with PFTween.
 
 ### 1. Basic - Simple and Easy
 
-Create and use animation at once.
+Create and use animation at once. [Learn more](#getting-started)
 
 ```typescript
-import { PFTween } from './PFTween';
-import Scene from 'Scene';
-
-(async () => {
-  const plane0 = await Scene.root.findFirst('plane0');
-  plane0.transform.x = new PFTween(-0.2, 0.2, 1000).scalar;
-})();
+plane0.transform.x = new PFTween(-0.2, 0.2, 1000).scalar;
 ```
 
 ### 2. Reusable - Better Performance
 
-Create and reuse/control it latter, such as `stop()`, `start()`,`repaly()`......
+Create and reuse/control it latter. [Learn more](#reuse-the-animation)
 
 ```typescript
-import { PFTween } from './PFTween';
-import Scene from 'Scene';
-import TouchGestures from 'TouchGestures';
+const animation = new PFTween(-0.2, 0.2, 1000)
+  .onStart(v => plane0.transform.x = v.scalar)
+  .build(false);
 
-(async () => {
-  const plane0 = await Scene.root.findFirst('plane0');
-  const animation = new PFTween(-0.2, 0.2, 1000)
-    .onStart(v => plane0.transform.x = v.scalar)
-    .build();
-
-  TouchGestures.onTap().subscribe(() => animaiton.replay());
-})();
+animaiton.replay();
 ```
 
-### 3. Clip - Play Animations in Sequence
+### 3. Clip - Awaitable Animation
 
-Create then play tweens in sequence, or at the same time. And you can await the them to finish.
+Create animation and you can await the them to complete. [Learn more](#play-animations-in-sequence)
 
 ```typescript
-import { PFTween } from './PFTween';
-import Scene from 'Scene';
-import Diagnostics from 'Diagnostics';
+const clip = new PFTween(-0.2, 0.2, 1000).clip;
 
-(async () => {
-  const plane0 = await Scene.root.findFirst('plane0');
-  const c1 = new PFTween(0, 0.2, 500).onStart(v => plane0.transform.x = v.scalar).clip;
-  const c2 = new PFTween(0, 0.1, 500).onStart(v => plane0.transform.y = v.scalar).clip;
-  const c3 = new PFTween(0.2, 0, 500).onStart(v => plane0.transform.x = v.scalar).clip;
-
-  // The "combine" and "concat" are static functions
-  const combine = PFTween.combine(c1, c2);
-  const sequence = PFTween.concat(combine, c3);
-
-  Diagnostics.log('Play');
-  await sequence();
-  Diagnostics.log('Finish');
-})();
+Diagnostics.log('start');
+await clip();
+Diagnostics.log('complete');
 ```
 
-### 4. Progress - Play Animation with Progress 0-1
+### 4. Progress - Control Animation with Progress 0-1
 
-Create then play tweens with progress you like. It's clamped in 0-1. Please note that the following callback and their related won't work: `onCompleteEvent`, `onStartEvent`, `onLoopEvent`.
+Create then play tweens with progress you like. [Learn more](#play-animation-with-progress)
 
  ```typescript
-import { PFTween } from './PFTween';
-import Scene from 'Scene';
-import Diagnostics from 'Diagnostics';
-
-(async () => {
-  const plane0 = await Scene.root.findFirst('plane0');
-  const p1 = new PFTween(0, 0.2, 500).onStart(v => plane0.transform.x = v.scalar).progress;
-  const p2 = new PFTween(0, 0.1, 500).onStart(v => plane0.transform.y = v.scalar).progress;
-  const p3 = new PFTween(0.2, 0, 500).onStart(v => plane0.transform.x = v.scalar).progress;
-
-  // The "combineProgress" and "concatProgress" are static functions
-  const combine = PFTween.combineProgress(p1, p2);
-  const ani = PFTween.concatProgress(combine, p3);
-
-  Diagnostics.log('Play');
-  ani.setProgress(0.5);
-  Diagnostics.log('Finish');
-})();
+const animation = new PFTween(0, 6, 1000).progress;
+progress.setProgress(0)   //0
+progress.setProgress(0.5) //3
+progress.setProgress(1)   //6
  ```
 
 
 
-## Basic of PFTween
+## Getting Started
 
 Let's create an animation, the value is from `0` to `1` in `1000` milliseconds, and output type is [`ScalarSignal`](https://sparkar.facebook.com/ar-studio/learn/reference/classes/reactivemodule.scalarsignal).
 
@@ -188,23 +149,21 @@ new PFTween(0, 1, 1000)
 There are also some useful function that can save you time.
 
 ```js
-(async () => {
-  const plane0 = await Scene.root.findFirst('plane0');
-  const material0 = await Materials.findFirst('material0');
+const plane0 = await Scene.root.findFirst('plane0');
+const material0 = await Materials.findFirst('material0');
 
-  new PFTween(0, 1, 1000)
-    .setDelay(1000)  // Delay 1000 milliseconds to start
-    .onStartVisible(plane0)
-    .onStartHidden(plane0)
-    .onCompleteVisible(plane0)
-    .onCompleteHidden(plane0)
-    .onCompleteResetPosition(plane0)
-    .onCompleteResetRotation(plane0)
-    .onCompleteResetScale(plane0)
-    .onCompleteResetOpacity(material0)
-    .onAnimatingVisibleOnly(plane0)
-    .build()
-})();
+new PFTween(0, 1, 1000)
+  .setDelay(1000)  // Delay 1000 milliseconds to start
+  .onStartVisible(plane0)
+  .onStartHidden(plane0)
+  .onCompleteVisible(plane0)
+  .onCompleteHidden(plane0)
+  .onCompleteResetPosition(plane0)
+  .onCompleteResetRotation(plane0)
+  .onCompleteResetScale(plane0)
+  .onCompleteResetOpacity(material0)
+  .onAnimatingVisibleOnly(plane0)
+  .build()
 ```
 
 
@@ -247,10 +206,10 @@ E.g., you need to punch a image every time user open their mouth:
 
 ```javascript
 const onMouthOpen = FaceTracking.face(0).mouth.openness.gt(0.2).onOn();
-mouthOpen.subscribe(play_punch_animation);
+onMouthOpen.subscribe(play_punch_animation);
 
 function play_punch_animation(){
-    plane0.transform.scale = new PFTween(1, 0.3, 1000).setEase(Ease.punch).scale;
+    plane0.transform.scale = new PFTween(1, 0.3, 1000).setEase(Ease.punch).pack3;
 }
 ```
 
@@ -272,7 +231,7 @@ onMouthOpen.subscribe(() => play_punch_animation.replay());
 
 
 
-## Clip - Play Animations in Sequence
+## Play Animations in Sequence
 
 `clip` is an asynchronous way to reuse animation based on `Promise`. With `clip`, you can play tween animation in sequence.
 
@@ -290,62 +249,66 @@ const clip3 = new PFTween(2, 3, 500).clip;
 clip1().then(clip2).then(clip3);
 ```
 
-
-
-### Concatenate Multiple Clips
-
-In addition to manually play multiple clips using `then()`, you can also use `PFTween.concat()` to concatenate them into one `clip`.
+In addition to manually play multiple clips using `then()`, you can also use **`PFTween.concat()`** to concatenate them into one `clip`.
 
 ```js
 const clip1 = new PFTween(0, 1, 500).clip;
 const clip2 = new PFTween(1, 2, 500).clip;
 const clip3 = new PFTween(2, 3, 500).clip;
+
 const animations = PFTween.concat(clip1, clip2, clip3);
 animations();
 ```
 
-
-
-### Combine Multiple Clips
-
-If you want to start multiple clips at the same time, you can use `PFTween.combine()` to combine multiple clips in to one `clip`.
+If you want to start multiple clips at the same time, you can use **`PFTween.combine()`** to combine multiple clips in to one `clip`.
 
 ```js
 const clip1 = new PFTween(0, 1, 500).clip;
 const clip2 = new PFTween(1, 2, 500).clip;
 const clip3 = new PFTween(2, 3, 500).clip;
+
 const animations = PFTween.combine(clip1, clip2, clip3);
 animations();
 ```
 
- It's similar as `Promise.all()`.
 
 
+## Play Animation with Progress
 
-### Result of Clip
+`.progress` is based on [`Animation.ValueDriver`](https://sparkar.facebook.com/ar-studio/learn/reference/classes/animationmodule.valuedriver), you can control it with progress you like. The progress value is clamped in 0-1. 
 
-The result of clip is a object with property `value`. The default result value is the end value of first `clip()` animation.
+The `onComplete`, `onStart`,  `onLoop` and their related won't work, so you have to use `onUpdate()` to set values.
 
-```javascript
-const clip1 = new PFTween(0, 1, 500).clip;
-const clip2 = new PFTween(1, 2, 500).clip;
-const clip3 = new PFTween(2, 3, 500).clip;
+```js
+const animation = new PFTween(-0.1, 0.1, 500).onUpdate(v => plane0.transform.x = v).progress;
+animation.setProgerss(0);   // plane0.transform.x = -0.1
+animation.setProgerss(0.5); // plane0.transform.x = 0
+animation.setProgerss(1);   // plane0.transform.x = 0.1 
 
-clip1('hi').then(clip2).then(clip3).then(Diagnostics.log);
-// {"value":'hi'}
+// or you can pass a ScalarSignal
+animation.setProgerss(new PFTween(0, 1, 1000).scalar);   
 ```
 
-If you want to set the result for clip chain, just pass a parameter when calling `clip()`.
+You can use `combineProgress` and `concatProgress` to merge multiple progress.
 
-```javascript
-const clip1 = new PFTween(0, 1, 500).clip;
-const clip2 = new PFTween(1, 2, 500).clip;
-const clip3 = new PFTween(2, 3, 500).clip;
-const animations = PFTween.concat(clip1, clip2, clip3);
+ ```typescript
+import { PFTween } from './PFTween';
+import Scene from 'Scene';
+import Diagnostics from 'Diagnostics';
 
-animations('Spark AR is awesome').then(Diagnostics.log);
-// {"value":"Spark AR is awesome"}
-```
+(async () => {
+  const plane0 = await Scene.root.findFirst('plane0');
+  const p1 = new PFTween(0, 0.2, 500).onUpdate(v => plane0.transform.x = v).progress;
+  const p2 = new PFTween(0, 0.1, 500).onUpdate(v => plane0.transform.y = v).progress;
+  const p3 = new PFTween(0.2, 0, 500).onUpdate(v => plane0.transform.x = v).progress;
+
+  // The "combineProgress" and "concatProgress" are static functions
+  const combine = PFTween.combineProgress(p1, p2);
+  const animation = PFTween.concatProgress(combine, p3);
+})();
+ ```
+
+
 
 
 
@@ -353,7 +316,7 @@ animations('Spark AR is awesome').then(Diagnostics.log);
 
 There are three ways to create animation with PFTween.
 
-#### 1. With Reusable Tween
+### 1. With Reusable Tween
 
 If your animation is made with `.build()`, it's will return a controller. You can stop the animation with controller's  `stop()` function.
 
@@ -377,9 +340,7 @@ import TouchGestures from 'TouchGestures';
 })();
 ```
 
-
-
-#### 2. Set ID
+### 2. Set ID
 
 You can add `.setId("id")`  to any of your tween, and then use the static function `PFTween.kill("id")` to kill and stop the animation. **Please note** that if you kill the animation, all of the events will be removed. (The animation you killed can't be reused)
 
@@ -399,9 +360,7 @@ import TouchGestures from 'TouchGestures';
 
 If your animation is created with basic way such `.scalar`, `.pack2`, `.pack3`...... The animation will be auto killed after complete.
 
-
-
-#### 3. Clip Cancellation
+### 3. Clip Cancellation
 
 If you animation is made with `.clip`, you can create a cancellationa and pass it when you play the clip.
 
