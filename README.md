@@ -84,9 +84,9 @@ Create then play tweens with progress you like. [Learn more](#play-animation-wit
 
  ```typescript
 const animation = new PFTween(0, 6, 1000).progress;
-progress.setProgress(0)   //0
-progress.setProgress(0.5) //3
-progress.setProgress(1)   //6
+progress.setProgress(0)   // 0
+progress.setProgress(0.5) // 3
+progress.setProgress(1)   // 6
  ```
 
 
@@ -193,7 +193,7 @@ You can also pass the `ScalarSignal`, `Point2DSignal`, `PointSignal`, `Point4DSi
 
 ```js
 new PFTween(plane0.transform.x, 1, 1000);
-new PFTween(plane0.transform.scale, [0,0,0], 1000);
+new PFTween(plane0.transform.scale, [0, 0, 0], 1000);
 ```
 
 
@@ -209,7 +209,7 @@ const onMouthOpen = FaceTracking.face(0).mouth.openness.gt(0.2).onOn();
 onMouthOpen.subscribe(play_punch_animation);
 
 function play_punch_animation(){
-    plane0.transform.scale = new PFTween(1, 0.3, 1000).setEase(Ease.punch).pack3;
+  plane0.transform.scale = new PFTween(1, 0.3, 1000).setEase(Ease.punch).pack3;
 }
 ```
 
@@ -220,9 +220,9 @@ Use `onStart()` to set the value and call `build()` at the end of `PFTween` chai
 ```javascript
 const onMouthOpen = FaceTracking.face(0).mouth.openness.gt(0.2).onOn();
 const play_punch_animation = new PFTween(1, 0.3, 1000)
-    .setEase(Ease.punch)
-    .onStart(tweener => plane0.transform.scale = tweener.scale)
-    .build(false); // The 'false' means don't paly animation when build. Default is 'true'.
+  .setEase(Ease.punch)
+  .onStart(tweener => plane0.transform.scale = tweener.scale)
+  .build(false); // The 'false' means don't paly animation when build. Default is 'true'.
     
 onMouthOpen.subscribe(() => play_punch_animation.replay());
 ```
@@ -233,7 +233,7 @@ onMouthOpen.subscribe(() => play_punch_animation.replay());
 
 ## Play Animations in Sequence
 
-`clip` is an asynchronous way to reuse animation based on `Promise`. With `clip`, you can play tween animation in sequence.
+**`.clip`** is an asynchronous way to reuse animation based on `Promise`. With `clip`, you can play tween animation in sequence.
 
 E.g, `jump().then(scale).then(rotate).then(fadeout).then(......`
 
@@ -275,9 +275,9 @@ animations();
 
 ## Play Animation with Progress
 
-`.progress` is based on [`Animation.ValueDriver`](https://sparkar.facebook.com/ar-studio/learn/reference/classes/animationmodule.valuedriver), you can control it with progress you like. The progress value is clamped in 0-1. 
+**`.progress`** is based on [`Animation.ValueDriver`](https://sparkar.facebook.com/ar-studio/learn/reference/classes/animationmodule.valuedriver), you can control it with progress you like. The progress value is clamped in 0-1. 
 
-The `onComplete`, `onStart`,  `onLoop` and their related won't work, so you have to use `onUpdate()` to set values.
+The `onComplete`, `onStart`,  `onLoop` and their related won't work, so you have to use **`onUpdate()`** to set values.
 
 ```js
 const animation = new PFTween(-0.1, 0.1, 500).onUpdate(v => plane0.transform.x = v).progress;
@@ -326,17 +326,17 @@ import Scene from 'Scene';
 import TouchGestures from 'TouchGestures';
 
 (async () => {
-    const plane0 = await Scene.root.findFirst('plane0');
+  const plane0 = await Scene.root.findFirst('plane0');
  
-    const controller = new PFTween(0, 1, 1000)
-        .setLoops(true)
-        .setId('foo')
-        .onStart(v => plane0.transform.x = v.scalar)
-        .build();
+  const controller = new PFTween(0, 1, 1000)
+    .setLoops(true)
+    .setId('foo')
+    .onStart(v => plane0.transform.x = v.scalar)
+    .build();
   
-    TouchGestures.onTap().subscribe(() => {
-        controller.stop();
-    });
+  TouchGestures.onTap().subscribe(() => {
+    controller.stop();
+  });
 })();
 ```
 
@@ -350,11 +350,11 @@ import Scene from 'Scene';
 import TouchGestures from 'TouchGestures';
 
 (async () => {
-    const plane0 = await Scene.root.findFirst('plane0');
+  const plane0 = await Scene.root.findFirst('plane0');
   
-    plane0.transform.x = new PFTween(0, 1, 1000).setLoops(true).setId('foo').scalar;
+  plane0.transform.x = new PFTween(0, 1, 1000).setLoops(true).setId('foo').scalar;
   
-    TouchGestures.onTap().subscribe(() => PFTween.kill('foo'));
+  TouchGestures.onTap().subscribe(() => PFTween.kill('foo'));
 })();
 ```
 
@@ -370,19 +370,19 @@ import Scene from 'Scene';
 import TouchGestures from 'TouchGestures';
 
 (async () => {
-    const plane0 = await Scene.root.findFirst('plane0');
+  const plane0 = await Scene.root.findFirst('plane0');
   
-    // PFTween.newCancellation is static function
-    const cancellation = PFTween.newClipCancellation();
+  // PFTween.newCancellation is static function
+  const cancellation = PFTween.newClipCancellation();
   
-    new PFTween(0, 1, 1000)
-        .setLoops(true)
-        .onStart(v => plane0.transform.x = v.scalar)
-        .clip(cancellation);
+  new PFTween(0, 1, 1000)
+    .setLoops(true)
+    .onStart(v => plane0.transform.x = v.scalar)
+    .clip(cancellation);
   
-    TouchGestures.onTap().subscribe(() => {
-        cancellation.cancel();
-    });
+  TouchGestures.onTap().subscribe(() => {
+    cancellation.cancel();
+  });
 })();
 ```
 
