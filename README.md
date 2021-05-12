@@ -13,23 +13,10 @@ You can use the similar syntax to [DOTween](http://dotween.demigiant.com) to cre
 
 - [Install](#install)
 - [Usage](#usage)
-    - [1. Basic - Simple and Easy](#1-basic---simple-and-easy)
-    - [2. Reusable - Better Performance](#2-reusable---better-performance)
-    - [3. Clip - Play Animations in Sequence](#3-clip---play-animations-in-sequence)
-    - [4. Progress - Play Animation with Progress 0-1](#4-progress---play-animation-with-progress-0-1)
-- [Basic of PFTween - Create Animation](#basic-of-pftween---create-animation)
-    - [Events](#events)
-    - [Array of numbers](#array-of-numbers)
+- [Basic of PFTween](#basic-of-pftween---create-animation)
 - [Reuse the Animation](#reuse-the-animation)
-- [Clip - Play Animations in Sequence](#clip---play-animations-in-sequence)
-    - [Concatenate Multiple Clips](#concatenate-multiple-clips)
-    - [Combine Multiple Clips](#combine-multiple-clips)
-    - [Result of Clip](#result-of-clip)
-- [Progress - Play Animation with Progress 0-1](#progress---play-animation-with-progress-0-1)
+- [Clip](#clip---play-animations-in-sequence)
 - [Stop Animation](#stop-animation)
-    - [1. With Reusable Tween](#1-with-reusable-tween)
-    - [2. Set ID](#2-set-id)
-    - [3. Clip Cancellation](#3-clip-cancellation)
 - [Donations](#donations)
 
 
@@ -143,7 +130,7 @@ import Diagnostics from 'Diagnostics';
 
 
 
-## Basic of PFTween - Create Animation
+## Basic of PFTween
 
 Let's create an animation, the value is from `0` to `1` in `1000` milliseconds, and output type is [`ScalarSignal`](https://sparkar.facebook.com/ar-studio/learn/reference/classes/reactivemodule.scalarsignal).
 
@@ -359,33 +346,6 @@ const animations = PFTween.concat(clip1, clip2, clip3);
 animations('Spark AR is awesome').then(Diagnostics.log);
 // {"value":"Spark AR is awesome"}
 ```
-
-
-
-## Progress - Play Animation with Progress 0-1
-
-Create then play tweens with progress you like. It's clamped in 0-1. Please note that the following callback and their related won't work: `onCompleteEvent`, `onStartEvent`, `onLoopEvent`.
-
- ```typescript
-import { PFTween } from './PFTween';
-import Scene from 'Scene';
-import Diagnostics from 'Diagnostics';
-
-(async () => {
-  const plane0 = await Scene.root.findFirst('plane0');
-  const p1 = new PFTween(0, 0.2, 500).onStart(v => plane0.transform.x = v.scalar).progress;
-  const p2 = new PFTween(0, 0.1, 500).onStart(v => plane0.transform.y = v.scalar).progress;
-  const p3 = new PFTween(0.2, 0, 500).onStart(v => plane0.transform.x = v.scalar).progress;
-
-  // The "combineProgress" and "concatProgress" are static functions
-  const combine = PFTween.combineProgress(p1, p2);
-  const ani = PFTween.concatProgress(combine, p3);
-
-  Diagnostics.log('Play');
-  ani.setProgress(0.5);
-  Diagnostics.log('Finish');
-})();
- ```
 
 
 
