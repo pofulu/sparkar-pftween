@@ -1,7 +1,7 @@
 {
   "name": "sparkar-pftween",
-  "version": "1.0.5",
-  "description": "A wrapped SparkAR animation tool",
+  "version": "1.1.0",
+  "description": "Spark AR library for tweening animation.",
   "main": "PFTween.js",
   "author": "Pofu Lu",
   "keywords": [
@@ -12,8 +12,10 @@
     "pofu"
   ],
   "files": [
-    "./PFTween.js"
+    "PFTween.js",
+    "PFTween.d.ts"
   ],
+  "types": "PFTween.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
