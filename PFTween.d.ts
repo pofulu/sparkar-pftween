@@ -1,38 +1,38 @@
 declare const samplers: {
-    linear: any;
-    easeInQuad: any;
-    easeOutQuad: any;
-    easeInOutQuad: any;
-    easeInCubic: any;
-    easeOutCubic: any;
-    easeInOutCubic: any;
-    easeInQuart: any;
-    easeOutQuart: any;
-    easeInOutQuart: any;
-    easeInQuint: any;
-    easeOutQuint: any;
-    easeInOutQuint: any;
-    easeInSine: any;
-    easeOutSine: any;
-    easeInOutSine: any;
-    easeInExpo: any;
-    easeOutExpo: any;
-    easeInOutExpo: any;
-    easeInCirc: any;
-    easeOutCirc: any;
-    easeInOutCirc: any;
-    easeInBack: any;
-    easeOutBack: any;
-    easeInOutBack: any;
-    easeInElastic: any;
-    easeOutElastic: any;
-    easeInOutElastic: any;
-    easeInBounce: any;
-    easeOutBounce: any;
-    easeInOutBounce: any;
-    linearPingPong: (begin: any, end: any) => any;
-    easePingPong: (begin: any, end: any) => any;
-    punch: (begin: any, amount: any) => any;
+    linear: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeInQuad: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeOutQuad: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeInOutQuad: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeInCubic: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeOutCubic: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeInOutCubic: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeInQuart: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeOutQuart: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeInOutQuart: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeInQuint: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeOutQuint: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeInOutQuint: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeInSine: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeOutSine: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeInOutSine: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeInExpo: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeOutExpo: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeInOutExpo: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeInCirc: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeOutCirc: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeInOutCirc: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeInBack: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeOutBack: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeInOutBack: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeInElastic: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeOutElastic: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeInOutElastic: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeInBounce: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeOutBounce: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    easeInOutBounce: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    linearPingPong: (begin: any, end: any) => ScalarSampler | ArrayOfScalarSamplers | RotationSampler;
+    easePingPong: (begin: any, end: any) => ScalarSampler | ArrayOfScalarSamplers;
+    punch: (begin: any, amount: any) => ScalarSampler | ArrayOfScalarSamplers;
 };
 declare class PFTweenEvent {
     private _events;
@@ -96,8 +96,12 @@ declare class PFTween<T extends Number | Number[] | ScalarSignal | Point2DSignal
     static concat(...clips: IPFTweenClip[]): IPFTweenClip;
     static combineProgress(progresses: IPFTweenProgress[]): IPFTweenProgress;
     static combineProgress(...progresses: IPFTweenProgress[]): IPFTweenProgress;
+    /** @deprecated It's typo of 'concatProgress' */
     static concatProgerss(progresses: IPFTweenProgress[]): IPFTweenProgress;
+    /** @deprecated It's typo of 'concatProgress' */
     static concatProgerss(...progresses: IPFTweenProgress[]): IPFTweenProgress;
+    static concatProgress(progresses: IPFTweenProgress[]): IPFTweenProgress;
+    static concatProgress(...progresses: IPFTweenProgress[]): IPFTweenProgress;
     /**
      * Stop and unsubscribe all events of the animation.
      * @param id The id you set for to your animation.
@@ -169,15 +173,15 @@ declare class PFTween<T extends Number | Number[] | ScalarSignal | Point2DSignal
     get progress(): PFTweenProgress;
     get clip(): IPFTweenClip;
     get scalar(): any;
-    get pack2(): any;
-    get pack3(): any;
-    get pack4(): any;
+    get pack2(): Point2DSignal;
+    get pack3(): PointSignal;
+    get pack4(): Point4DSignal;
     /**
      * @deprecated Please use `pack3` instead. `scale` is equivalent to `pack3` now.
      */
-    get scale(): any;
-    get quaternion(): any;
-    get rgba(): any;
+    get scale(): PointSignal;
+    get quaternion(): QuaternionSignal;
+    get rgba(): RgbaSignal;
     /**
      * @deprecated Please use `deg2rad` instead. `rotation` is equivalent to `deg2rad` now.
      */
@@ -193,18 +197,18 @@ declare class PFTweenValue {
      * Take input numbers and output them in a different order.
      * Input values correspond to the swizzle value (xyzw) in the order theyre inputted. For example, an input of (1,2,3) and a swizzle value of (yxz) would output (2,1,3). You can also use 0 and 1. For example, a swizzle value of (x01) would output (1,0,1).
      */
-    swizzle(specifier: any): any;
+    swizzle(specifier: string): any;
     patch(name: string): void;
     get scalar(): any;
-    get pack2(): any;
-    get pack3(): any;
+    get pack2(): Point2DSignal;
+    get pack3(): PointSignal;
     /**
      * @deprecated Please use `pack3` instead. `scale` is equivalent to `pack3` now.
      */
-    get scale(): any;
-    get pack4(): any;
-    get quaternion(): any;
-    get rgba(): any;
+    get scale(): PointSignal;
+    get pack4(): Point4DSignal;
+    get quaternion(): QuaternionSignal;
+    get rgba(): RgbaSignal;
     /**
      * @deprecated Please use `deg2rad` instead. `rotation` is equivalent to `deg2rad` now.
      */
@@ -215,8 +219,8 @@ declare class PFTweenProgress implements IPFTweenProgress {
     readonly durationMilliseconds: number;
     private config;
     constructor(config: PFTweenConfig);
-    setProgress(progress: number): any;
-    setProgress(progress: ScalarSignal): any;
+    setProgress(progress: number): void;
+    setProgress(progress: ScalarSignal): void;
 }
 declare class PFTweener extends PFTweenValue {
     private config;
@@ -228,6 +232,6 @@ declare class PFTweener extends PFTweenValue {
     reset(): void;
     reverse(): void;
     stop(reset?: boolean): void;
-    get isRunning(): any;
+    get isRunning(): BoolSignal;
 }
-export { samplers as Ease, PFTween, ICurveProvider };
+export { samplers as Ease, PFTween, ICurveProvider, IPFTweenClip, IPFTweenProgress, PFTweener };

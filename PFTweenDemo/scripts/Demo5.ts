@@ -29,7 +29,7 @@ import { Ease, PFTween } from './PFTween';
         .progress;
 
     // Play x and y at the same time, and then the scale, the whole animation can be controlled by progress 0-1
-    const progressAnimation = PFTween.concatProgerss(PFTween.combineProgress(progressX, progressY), progressScale);
+    const progressAnimation = PFTween.concatProgress(PFTween.combineProgress(progressX, progressY), progressScale);
 
     TouchGestures.onPan().subscribe(gesture => {
         const progress = gesture.location.x.div(CameraInfo.previewSize.width);
