@@ -1,6 +1,6 @@
-import Diagnostics from 'Diagnostics';
 import Time from 'Time';
 import Animation from 'Animation';
+import Scene from 'Scene';
 import Reactive from 'Reactive';
 import Patches from 'Patches';
 
@@ -284,9 +284,19 @@ class PFTween<T extends Number | Number[] | ScalarSignal | Point2DSignal | Point
         }
     }
 
+
+    /** @deprecated It's typo of 'concatProgress' */
     static concatProgerss(progresses: IPFTweenProgress[]): IPFTweenProgress;
+    /** @deprecated It's typo of 'concatProgress' */
     static concatProgerss(...progresses: IPFTweenProgress[]): IPFTweenProgress;
-    static concatProgerss(...progresses) {
+    static concatProgerss(...progresses: any) {
+        progresses = progresses.flat();
+        return PFTween.concatProgress(progresses);
+    }
+
+    static concatProgress(progresses: IPFTweenProgress[]): IPFTweenProgress;
+    static concatProgress(...progresses: IPFTweenProgress[]): IPFTweenProgress;
+    static concatProgress(...progresses) {
         progresses = progresses.flat();
         const total = progresses
             .map(pftween => pftween.durationMilliseconds)
@@ -598,7 +608,7 @@ class PFTweenValue {
      * Take input numbers and output them in a different order. 
      * Input values correspond to the swizzle value (xyzw) in the order theyre inputted. For example, an input of (1,2,3) and a swizzle value of (yxz) would output (2,1,3). You can also use 0 and 1. For example, a swizzle value of (x01) would output (1,0,1). 
      */
-    swizzle(specifier) {
+    swizzle(specifier: string) {
         return swizzle(this.animate, specifier);
     }
 
@@ -709,8 +719,8 @@ class PFTweenProgress implements IPFTweenProgress {
         this.config = config;
     }
 
-    setProgress(progress: number);
-    setProgress(progress: ScalarSignal);
+    setProgress(progress: number): void;
+    setProgress(progress: ScalarSignal): void;
     setProgress(progress: any) {
         const driver = Animation.valueDriver(progress, 0, 1);
         if (this.config.useCustomCurve) {
@@ -805,7 +815,7 @@ class PFTweener extends PFTweenValue {
 }
 
 /** Convert scalar signal to number, or the signal that contains 'xyzw' to array of numbers.*/
-function toNumber(signal: any): number | number[] {
+function toNumber(signal: any): number | number[] | undefined {
     if (typeof signal == 'number') {
         return signal;
     }
@@ -884,4 +894,4 @@ function swizzle(value: any, specifier: string): any {
     }
 }
 
-export { samplers as Ease, PFTween, ICurveProvider };
+export { samplers as Ease, PFTween, ICurveProvider, IPFTweenClip, IPFTweenProgress, PFTweener };

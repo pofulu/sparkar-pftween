@@ -63,7 +63,7 @@ const animation = new PFTween(-0.2, 0.2, 1000)
   .onStart(v => plane0.transform.x = v.scalar)
   .build(false);
 
-animaiton.replay();
+animation.replay();
 ```
 
 ### 3. Clip - Awaitable Animation
@@ -221,7 +221,7 @@ Use `onStart()` to set the value and call `build()` at the end of `PFTween` chai
 const onMouthOpen = FaceTracking.face(0).mouth.openness.gt(0.2).onOn();
 const play_punch_animation = new PFTween(1, 0.3, 1000)
   .setEase(Ease.punch)
-  .onStart(tweener => plane0.transform.scale = tweener.scale)
+  .onStart(tweener => plane0.transform.scale = tweener.pack3)
   .build(false); // The 'false' means don't paly animation when build. Default is 'true'.
     
 onMouthOpen.subscribe(() => play_punch_animation.replay());

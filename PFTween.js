@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PFTween = exports.Ease = void 0;
+exports.PFTweener = exports.PFTween = exports.Ease = void 0;
 const Time_1 = __importDefault(require("Time"));
 const Animation_1 = __importDefault(require("Animation"));
 const Reactive_1 = __importDefault(require("Reactive"));
@@ -200,6 +200,10 @@ class PFTween {
         };
     }
     static concatProgerss(...progresses) {
+        progresses = progresses.flat();
+        return PFTween.concatProgress(progresses);
+    }
+    static concatProgress(...progresses) {
         progresses = progresses.flat();
         const total = progresses
             .map(pftween => pftween.durationMilliseconds)
@@ -611,6 +615,7 @@ class PFTweener extends PFTweenValue {
         return this.driver.isRunning();
     }
 }
+exports.PFTweener = PFTweener;
 /** Convert scalar signal to number, or the signal that contains 'xyzw' to array of numbers.*/
 function toNumber(signal) {
     if (typeof signal == 'number') {
