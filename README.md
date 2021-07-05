@@ -25,7 +25,7 @@ You can use the similar syntax to [DOTween](http://dotween.demigiant.com) to cre
 
 ## Install
 
-[![NPM](https://nodei.co/npm/sparkar-pftween.png?compact=true)](https://nodei.co/npm/sparkar-pftween.png?compact=true)
+[![NPM](https://nodei.co/npm/sparkar-pftween.png?compact=true)](https://www.npmjs.com/package/sparkar-pftween)
 
 You can download script and import it into your Spark AR project, or use this with npm.
 
