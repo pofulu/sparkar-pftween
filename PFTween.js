@@ -441,57 +441,54 @@ class PFTween {
 exports.PFTween = PFTween;
 class PFTweenValue {
     constructor(animate) {
-        this.animate = animate;
-    }
-    get rawValue() {
-        return this.animate;
+        this.rawValue = animate;
     }
     /**
      * Take input numbers and output them in a different order.
      * Input values correspond to the swizzle value (xyzw) in the order theyre inputted. For example, an input of (1,2,3) and a swizzle value of (yxz) would output (2,1,3). You can also use 0 and 1. For example, a swizzle value of (x01) would output (1,0,1).
      */
     swizzle(specifier) {
-        return swizzle(this.animate, specifier);
+        return swizzle(this.rawValue, specifier);
     }
     patch(name) {
-        if (!Array.isArray(this.animate)) {
-            Patches_1.default.inputs.setScalar(name, this.animate);
+        if (!Array.isArray(this.rawValue)) {
+            Patches_1.default.inputs.setScalar(name, this.rawValue);
         }
         else {
-            switch (this.animate.length) {
+            switch (this.rawValue.length) {
                 case 2:
-                    Patches_1.default.inputs.setPoint2D(name, Reactive_1.default.pack2(this.animate[0], this.animate[1]));
+                    Patches_1.default.inputs.setPoint2D(name, Reactive_1.default.pack2(this.rawValue[0], this.rawValue[1]));
                     break;
                 case 3:
-                    Patches_1.default.inputs.setPoint(name, Reactive_1.default.pack3(this.animate[0], this.animate[1], this.animate[2]));
+                    Patches_1.default.inputs.setPoint(name, Reactive_1.default.pack3(this.rawValue[0], this.rawValue[1], this.rawValue[2]));
                     break;
                 case 4:
-                    Patches_1.default.inputs.setColor(name, Reactive_1.default.RGBA(this.animate[0], this.animate[1], this.animate[2], this.animate[3]));
+                    Patches_1.default.inputs.setColor(name, Reactive_1.default.RGBA(this.rawValue[0], this.rawValue[1], this.rawValue[2], this.rawValue[3]));
                     break;
                 default:
-                    throw `Unsupported value length: ${this.animate.length} values from script to patch with the name '${name}'`;
+                    throw `Unsupported value length: ${this.rawValue.length} values from script to patch with the name '${name}'`;
             }
         }
     }
     get scalar() {
-        if (Array.isArray(this.animate)) {
-            return this.animate[0];
+        if (Array.isArray(this.rawValue)) {
+            return this.rawValue[0];
         }
         else {
-            return this.animate;
+            return this.rawValue;
         }
     }
     get pack2() {
-        if (Array.isArray(this.animate)) {
-            return Reactive_1.default.pack2(this.animate[0] ? this.animate[0] : 0, this.animate[1] ? this.animate[1] : 0);
+        if (Array.isArray(this.rawValue)) {
+            return Reactive_1.default.pack2(this.rawValue[0] ? this.rawValue[0] : 0, this.rawValue[1] ? this.rawValue[1] : 0);
         }
         else {
             return Reactive_1.default.pack2(this.scalar, this.scalar);
         }
     }
     get pack3() {
-        if (Array.isArray(this.animate)) {
-            return Reactive_1.default.pack3(this.animate[0] ? this.animate[0] : 0, this.animate[1] ? this.animate[1] : 0, this.animate[2] ? this.animate[2] : 0);
+        if (Array.isArray(this.rawValue)) {
+            return Reactive_1.default.pack3(this.rawValue[0] ? this.rawValue[0] : 0, this.rawValue[1] ? this.rawValue[1] : 0, this.rawValue[2] ? this.rawValue[2] : 0);
         }
         else {
             return Reactive_1.default.pack3(this.scalar, this.scalar, this.scalar);
@@ -504,19 +501,19 @@ class PFTweenValue {
         return this.pack3;
     }
     get pack4() {
-        if (Array.isArray(this.animate)) {
-            return Reactive_1.default.pack4(this.animate[0] ? this.animate[0] : 0, this.animate[1] ? this.animate[1] : 0, this.animate[2] ? this.animate[2] : 0, this.animate[3] ? this.animate[3] : 0);
+        if (Array.isArray(this.rawValue)) {
+            return Reactive_1.default.pack4(this.rawValue[0] ? this.rawValue[0] : 0, this.rawValue[1] ? this.rawValue[1] : 0, this.rawValue[2] ? this.rawValue[2] : 0, this.rawValue[3] ? this.rawValue[3] : 0);
         }
         else {
             return Reactive_1.default.pack4(this.scalar, this.scalar, this.scalar, this.scalar);
         }
     }
     get quaternion() {
-        if (Array.isArray(this.animate) && this.animate.length == 4) {
-            return Reactive_1.default.quaternion(this.animate[3], this.animate[0], this.animate[1], this.animate[2]);
+        if (Array.isArray(this.rawValue) && this.rawValue.length == 4) {
+            return Reactive_1.default.quaternion(this.rawValue[3], this.rawValue[0], this.rawValue[1], this.rawValue[2]);
         }
         else {
-            throw `The length of tween value' mismatched, 'quaternion' expected 4 numbers but got ${Array.isArray(this.animate) ? this.animate.length : 1}.`;
+            throw `The length of tween value' mismatched, 'quaternion' expected 4 numbers but got ${Array.isArray(this.rawValue) ? this.rawValue.length : 1}.`;
         }
     }
     get rgba() {
@@ -573,7 +570,7 @@ class PFTweener extends PFTweenValue {
             config.events.onComplete.dispose();
         }
         config.events.onLoop.invokeOnEvent(driver.onAfterIteration());
-        config.events.onUpdate.invokeOnMonitor(tween);
+        config.events.onUpdate.invokeOnMonitor(tween.rawValue);
         this.driver = driver;
         this.config = config;
         this.play = () => {
