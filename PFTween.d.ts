@@ -86,7 +86,7 @@ declare type PFTweenConfig = {
     end: number | number[];
 };
 declare type SupportType<T> = T extends number[] ? number[] | Point2DSignal | PointSignal | Point4DSignal : T extends ScalarSignal | number ? ScalarSignal | number : T extends Point2DSignal ? Point2DSignal | number[] : T extends PointSignal ? PointSignal | number[] : T extends Point4DSignal ? Point4DSignal | number[] : never;
-declare type UpdateValueType<T> = T extends number[] | Point2DSignal | Point4DSignal ? number[] : T extends ScalarSignal | number ? number : never;
+declare type UpdateValueType<T> = T extends number[] | PointSignal | Point2DSignal | Point4DSignal ? number[] : T extends ScalarSignal | number ? number : never;
 declare class PFTween<T extends Number | Number[] | ScalarSignal | Point2DSignal | PointSignal | Point4DSignal> {
     private config;
     constructor(begin: T, end: SupportType<T>, durationMilliseconds: number);
@@ -190,9 +190,8 @@ declare class PFTween<T extends Number | Number[] | ScalarSignal | Point2DSignal
     get durationMilliseconds(): number;
 }
 declare class PFTweenValue {
-    private animate;
+    readonly rawValue: any;
     constructor(animate: any);
-    get rawValue(): any;
     /**
      * Take input numbers and output them in a different order.
      * Input values correspond to the swizzle value (xyzw) in the order theyre inputted. For example, an input of (1,2,3) and a swizzle value of (yxz) would output (2,1,3). You can also use 0 and 1. For example, a swizzle value of (x01) would output (1,0,1).
