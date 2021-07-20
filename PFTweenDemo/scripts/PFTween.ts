@@ -1,6 +1,5 @@
 import Time from 'Time';
 import Animation from 'Animation';
-import Scene from 'Scene';
 import Reactive from 'Reactive';
 import Patches from 'Patches';
 
@@ -216,19 +215,19 @@ type PFTweenConfig = {
 }
 
 type SupportType<T> =
-    T extends number[] ? number[] | Point2DSignal | PointSignal | Point4DSignal :
+    T extends number[] ? number[] | Vec2Signal | PointSignal | Vec4Signal :
     T extends ScalarSignal | number ? ScalarSignal | number :
-    T extends Point2DSignal ? Point2DSignal | number[] :
+    T extends Vec2Signal ? Vec2Signal | number[] :
     T extends PointSignal ? PointSignal | number[] :
-    T extends Point4DSignal ? Point4DSignal | number[] :
+    T extends Vec4Signal ? Vec4Signal | number[] :
     never;
 
 type UpdateValueType<T> =
-    T extends number[] | PointSignal | Point2DSignal | Point4DSignal ? number[] :
+    T extends number[] | PointSignal | Vec2Signal | Vec4Signal ? number[] :
     T extends ScalarSignal | number ? number :
     never;
 
-class PFTween<T extends Number | Number[] | ScalarSignal | Point2DSignal | PointSignal | Point4DSignal> {
+class PFTween<T extends Number | Number[] | ScalarSignal | Vec2Signal | PointSignal | Vec4Signal> {
     private config: PFTweenConfig;
 
     constructor(begin: T, end: SupportType<T>, durationMilliseconds: number);
@@ -890,4 +889,5 @@ function swizzle(value: any, specifier: string): any {
     }
 }
 
-export { samplers as Ease, PFTween, ICurveProvider, IPFTweenClip, IPFTweenProgress, PFTweener };
+export { samplers as Ease, PFTween };
+export type { PFTweenValue, ICurveProvider, IPFTweenClip, IPFTweenProgress, PFTweener, PFTweenClipCancellation }
