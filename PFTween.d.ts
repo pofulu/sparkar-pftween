@@ -85,9 +85,9 @@ declare type PFTweenConfig = {
     begin: number | number[];
     end: number | number[];
 };
-declare type SupportType<T> = T extends number[] ? number[] | Point2DSignal | PointSignal | Point4DSignal : T extends ScalarSignal | number ? ScalarSignal | number : T extends Point2DSignal ? Point2DSignal | number[] : T extends PointSignal ? PointSignal | number[] : T extends Point4DSignal ? Point4DSignal | number[] : never;
-declare type UpdateValueType<T> = T extends number[] | PointSignal | Point2DSignal | Point4DSignal ? number[] : T extends ScalarSignal | number ? number : never;
-declare class PFTween<T extends Number | Number[] | ScalarSignal | Point2DSignal | PointSignal | Point4DSignal> {
+declare type SupportType<T> = T extends number[] ? number[] | Vec2Signal | PointSignal | Vec4Signal : T extends ScalarSignal | number ? ScalarSignal | number : T extends Vec2Signal ? Vec2Signal | number[] : T extends PointSignal ? PointSignal | number[] : T extends Vec4Signal ? Vec4Signal | number[] : never;
+declare type UpdateValueType<T> = T extends number[] | PointSignal | Vec2Signal | Vec4Signal ? number[] : T extends ScalarSignal | number ? number : never;
+declare class PFTween<T extends Number | Number[] | ScalarSignal | Vec2Signal | PointSignal | Vec4Signal> {
     private config;
     constructor(begin: T, end: SupportType<T>, durationMilliseconds: number);
     static combine(clips: IPFTweenClip[]): IPFTweenClip;
@@ -173,9 +173,9 @@ declare class PFTween<T extends Number | Number[] | ScalarSignal | Point2DSignal
     get progress(): PFTweenProgress;
     get clip(): IPFTweenClip;
     get scalar(): any;
-    get pack2(): Point2DSignal;
+    get pack2(): Vec2Signal;
     get pack3(): PointSignal;
-    get pack4(): Point4DSignal;
+    get pack4(): Vec4Signal;
     /**
      * @deprecated Please use `pack3` instead. `scale` is equivalent to `pack3` now.
      */
@@ -199,13 +199,13 @@ declare class PFTweenValue {
     swizzle(specifier: string): any;
     patch(name: string): void;
     get scalar(): any;
-    get pack2(): Point2DSignal;
+    get pack2(): Vec2Signal;
     get pack3(): PointSignal;
     /**
      * @deprecated Please use `pack3` instead. `scale` is equivalent to `pack3` now.
      */
     get scale(): PointSignal;
-    get pack4(): Point4DSignal;
+    get pack4(): Vec4Signal;
     get quaternion(): QuaternionSignal;
     get rgba(): RgbaSignal;
     /**
@@ -233,4 +233,5 @@ declare class PFTweener extends PFTweenValue {
     stop(reset?: boolean): void;
     get isRunning(): BoolSignal;
 }
-export { samplers as Ease, PFTween, ICurveProvider, IPFTweenClip, IPFTweenProgress, PFTweener };
+export { samplers as Ease, PFTween };
+export type { PFTweenValue, ICurveProvider, IPFTweenClip, IPFTweenProgress, PFTweener, PFTweenClipCancellation };
