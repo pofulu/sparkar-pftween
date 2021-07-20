@@ -38,7 +38,7 @@ You can download script and import it into your Spark AR project, or use this wi
     ```
 
 
-3. You can also [Click Here to Download Sample Project (v115)](https://github.com/pofulu/sparkar-pftween/releases/latest/download/PFTweenDemo.arprojpkg).
+3. You can also [Click Here to Download Sample Project (v118)](https://github.com/pofulu/sparkar-pftween/releases/latest/download/PFTweenDemo.arprojpkg).
 
 
 
