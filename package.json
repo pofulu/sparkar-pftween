@@ -1,6 +1,6 @@
 {
   "name": "sparkar-pftween",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Spark AR library for tweening animation.",
   "main": "PFTween.js",
   "author": "Pofu Lu",
