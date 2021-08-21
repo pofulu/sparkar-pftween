@@ -30,9 +30,9 @@ declare const samplers: {
     easeInBounce: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
     easeOutBounce: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
     easeInOutBounce: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
-    linearPingPong: (begin: any, end: any) => ScalarSampler | ArrayOfScalarSamplers | RotationSampler;
-    easePingPong: (begin: any, end: any) => ScalarSampler | ArrayOfScalarSamplers;
-    punch: (begin: any, amount: any) => ScalarSampler | ArrayOfScalarSamplers;
+    linearPingPong: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers | RotationSampler;
+    easePingPong: (begin: number | number[], end: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
+    punch: (begin: number | number[], amount: number | number[]) => ScalarSampler | ArrayOfScalarSamplers;
 };
 declare class PFTweenEvent {
     private _events;
@@ -172,7 +172,7 @@ declare class PFTween<T extends Number | Number[] | ScalarSignal | Vec2Signal | 
      */
     get progress(): PFTweenProgress;
     get clip(): IPFTweenClip;
-    get scalar(): any;
+    get scalar(): ScalarSignal;
     get pack2(): Vec2Signal;
     get pack3(): PointSignal;
     get pack4(): Vec4Signal;
@@ -185,8 +185,8 @@ declare class PFTween<T extends Number | Number[] | ScalarSignal | Vec2Signal | 
     /**
      * @deprecated Please use `deg2rad` instead. `rotation` is equivalent to `deg2rad` now.
      */
-    get rotation(): any;
-    get deg2rad(): any;
+    get rotation(): ScalarSignal;
+    get deg2rad(): ScalarSignal;
     get durationMilliseconds(): number;
 }
 declare class PFTweenValue {
@@ -198,7 +198,7 @@ declare class PFTweenValue {
      */
     swizzle(specifier: string): any;
     patch(name: string): void;
-    get scalar(): any;
+    get scalar(): ScalarSignal;
     get pack2(): Vec2Signal;
     get pack3(): PointSignal;
     /**
@@ -211,8 +211,8 @@ declare class PFTweenValue {
     /**
      * @deprecated Please use `deg2rad` instead. `rotation` is equivalent to `deg2rad` now.
      */
-    get rotation(): any;
-    get deg2rad(): any;
+    get rotation(): ScalarSignal;
+    get deg2rad(): ScalarSignal;
 }
 declare class PFTweenProgress implements IPFTweenProgress {
     readonly durationMilliseconds: number;
