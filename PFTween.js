@@ -211,12 +211,16 @@ class PFTween {
         return {
             get durationMilliseconds() { return total; },
             setProgress(progress) {
-                let last = 0;
+                let start = 0;
+                let startTimings = [0];
                 for (let i = 0; i < progresses.length; i++) {
+                    startTimings.push(start + progresses[i].durationMilliseconds / total);
+                }
+                for (let i = progresses.length - 1; i >= 0; i--) {
                     const tween = progresses[i];
-                    const end = last + tween.durationMilliseconds / total;
-                    tween.setProgress(Reactive_1.default.fromRange(progress, last, end));
-                    last = end;
+                    start = startTimings[i];
+                    const end = start + tween.durationMilliseconds / total;
+                    tween.setProgress(Reactive_1.default.fromRange(progress, start, end));
                 }
             }
         };

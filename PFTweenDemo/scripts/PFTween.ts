@@ -304,13 +304,18 @@ class PFTween<T extends Number | Number[] | ScalarSignal | Vec2Signal | PointSig
         return {
             get durationMilliseconds() { return total },
             setProgress(progress) {
-                let last = 0;
+                let start = 0;
+                let startTimings = [0];
 
                 for (let i = 0; i < progresses.length; i++) {
+                    startTimings.push(start + progresses[i].durationMilliseconds / total);
+                }
+
+                for (let i = progresses.length - 1; i >= 0; i--) {
                     const tween = progresses[i];
-                    const end = last + tween.durationMilliseconds / total;
-                    tween.setProgress(Reactive.fromRange(progress, last, end))
-                    last = end;
+                    start = startTimings[i];
+                    const end = start + tween.durationMilliseconds / total;
+                    tween.setProgress(Reactive.fromRange(progress, start, end))
                 }
             }
         }

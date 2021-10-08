@@ -222,7 +222,7 @@ const onMouthOpen = FaceTracking.face(0).mouth.openness.gt(0.2).onOn();
 const play_punch_animation = new PFTween(1, 0.3, 1000)
   .setEase(Ease.punch)
   .onStart(tweener => plane0.transform.scale = tweener.pack3)
-  .build(false); // The 'false' means don't paly animation when build. Default is 'true'.
+  .build(false); // The 'false' means don't play animation when build. Default is 'true'.
     
 onMouthOpen.subscribe(() => play_punch_animation.replay());
 ```
@@ -281,12 +281,12 @@ The `onComplete`, `onStart`,  `onLoop` and their related won't work, so you have
 
 ```js
 const animation = new PFTween(-0.1, 0.1, 500).onUpdate(v => plane0.transform.x = v).progress;
-animation.setProgerss(0);   // plane0.transform.x = -0.1
-animation.setProgerss(0.5); // plane0.transform.x = 0
-animation.setProgerss(1);   // plane0.transform.x = 0.1 
+animation.setProgress(0);   // plane0.transform.x = -0.1
+animation.setProgress(0.5); // plane0.transform.x = 0
+animation.setProgress(1);   // plane0.transform.x = 0.1 
 
 // or you can pass a ScalarSignal
-animation.setProgerss(new PFTween(0, 1, 1000).scalar);   
+animation.setProgress(new PFTween(0, 1, 1000).scalar);   
 ```
 
 You can use `combineProgress` and `concatProgress` to merge multiple progress.
