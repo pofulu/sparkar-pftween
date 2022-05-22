@@ -557,15 +557,16 @@ class PFTweener extends PFTweenValue {
             loopCount: config.loopCount,
             mirror: config.isMirror
         });
-        let tween;
-        if (config.useCustomCurve) {
-            const progress = Animation_1.default.animate(driver, Animation_1.default.samplers.linear(0, 1));
-            const y = config.curve.evaluate(progress);
-            tween = super(Animation_1.default.animate(Animation_1.default.valueDriver(y, 0, 1), Animation_1.default.samplers.linear(config.begin, config.end)));
-        }
-        else {
-            tween = super(Animation_1.default.animate(driver, config.sampler));
-        }
+        const tween = super((() => {
+            if (config.useCustomCurve) {
+                const progress = Animation_1.default.animate(driver, Animation_1.default.samplers.linear(0, 1));
+                const y = config.curve.evaluate(progress);
+                return Animation_1.default.animate(Animation_1.default.valueDriver(y, 0, 1), Animation_1.default.samplers.linear(config.begin, config.end));
+            }
+            else {
+                return Animation_1.default.animate(driver, config.sampler);
+            }
+        })());
         // prevent unnecessary subscription 
         if (config.loopCount != Infinity) {
             config.events.onComplete.invokeOnEvent(driver.onCompleted());

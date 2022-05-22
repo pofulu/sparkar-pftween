@@ -598,9 +598,9 @@ class PFTween<T extends Number | Number[] | ScalarSignal | Vec2Signal | PointSig
 }
 
 class PFTweenValue {
-    readonly rawValue;
+    readonly rawValue: ScalarSignal | ArrayOfScalarSignals;
 
-    constructor(animate) {
+    constructor(animate: ScalarSignal | ArrayOfScalarSignals) {
         this.rawValue = animate;
     }
 

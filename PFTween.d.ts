@@ -190,8 +190,8 @@ declare class PFTween<T extends Number | Number[] | ScalarSignal | Vec2Signal | 
     get durationMilliseconds(): number;
 }
 declare class PFTweenValue {
-    readonly rawValue: any;
-    constructor(animate: any);
+    readonly rawValue: ScalarSignal | ArrayOfScalarSignals;
+    constructor(animate: ScalarSignal | ArrayOfScalarSignals);
     /**
      * Take input numbers and output them in a different order.
      * Input values correspond to the swizzle value (xyzw) in the order theyre inputted. For example, an input of (1,2,3) and a swizzle value of (yxz) would output (2,1,3). You can also use 0 and 1. For example, a swizzle value of (x01) would output (1,0,1).
