@@ -745,15 +745,15 @@ class PFTweener extends PFTweenValue {
             mirror: config.isMirror
         });
 
-        let tween: PFTweenValue;
-
-        if (config.useCustomCurve) {
-            const progress = Animation.animate(driver, Animation.samplers.linear(0, 1));
-            const y = config.curve.evaluate(progress);
-            tween = super(Animation.animate(Animation.valueDriver(y, 0, 1), Animation.samplers.linear(config.begin, config.end))) as unknown as PFTweenValue;
-        } else {
-            tween = super(Animation.animate(driver, config.sampler)) as unknown as PFTweenValue;
-        }
+        const tween = super((() => {
+            if (config.useCustomCurve) {
+                const progress = Animation.animate(driver, Animation.samplers.linear(0, 1));
+                const y = config.curve.evaluate(progress);
+                return Animation.animate(Animation.valueDriver(y, 0, 1), Animation.samplers.linear(config.begin, config.end));
+            } else {
+                return Animation.animate(driver, config.sampler);
+            }
+        })()) as unknown as PFTweenValue;
 
         // prevent unnecessary subscription 
         if (config.loopCount != Infinity) {
